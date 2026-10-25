@@ -1,5 +1,3 @@
-use macroquad::{color::*, input::*, window::*};
-
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     initialize()?;
     while !macroquad::input::is_quit_requested() {
@@ -14,15 +12,14 @@ fn initialize() -> Result<(), Box<dyn std::error::Error>> {
     println!("Initializing game");
 
     //handle program termination manually
-    prevent_quit();
+    macroquad::input::prevent_quit();
 
     Ok(())
 }
 
 async fn update() -> Result<(), Box<dyn std::error::Error>> {
-    clear_background(BLACK);
-    next_frame().await;
-
+    macroquad::window::clear_background(macroquad::color::BLACK);
+    macroquad::window::next_frame().await;
     Ok(())
 }
 
