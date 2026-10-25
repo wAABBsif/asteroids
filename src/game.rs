@@ -12,7 +12,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut state = GameState::new();
     initialize(&mut state)?;
     while !macroquad::input::is_quit_requested() {
-        update(&mut state).await?;
+        update(&mut state, macroquad::time::get_frame_time()).await?;
     }
     terminate(&mut state)?;
 
@@ -28,7 +28,7 @@ fn initialize(mut state: &GameState) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn update(mut state: &GameState) -> Result<(), Box<dyn std::error::Error>> {
+async fn update(mut state: &GameState, delta: f32) -> Result<(), Box<dyn std::error::Error>> {
     macroquad::window::clear_background(macroquad::color::BLACK);
     macroquad::window::next_frame().await;
     Ok(())
