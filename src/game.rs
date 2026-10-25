@@ -2,15 +2,8 @@ struct GameState {
 
 }
 
-impl GameState {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    let mut state = GameState::new();
-    initialize(&mut state)?;
+    let mut state = initialize()?;
     while !macroquad::input::is_quit_requested() {
         update(&mut state, macroquad::time::get_frame_time()).await?;
         draw(&mut state).await?;
@@ -20,13 +13,17 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn initialize(mut state: &GameState) -> Result<(), Box<dyn std::error::Error>> {
+fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
     println!("Initializing game");
 
     //handle program termination manually
     macroquad::input::prevent_quit();
 
-    Ok(())
+    let state = GameState {
+
+    };
+
+    Ok(state)
 }
 
 async fn update(mut state: &GameState, delta: f32) -> Result<(), Box<dyn std::error::Error>> {
