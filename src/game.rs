@@ -31,7 +31,7 @@ fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
 }
 
 async fn update(state: &mut GameState, delta: f32) -> Result<(), Box<dyn std::error::Error>> {
-    state.player.update();
+    state.player.update(delta);
 
     Ok(())
 }
