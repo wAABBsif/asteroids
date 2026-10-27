@@ -1,4 +1,4 @@
-use macroquad::{math::*, shapes::draw_triangle, *};
+use macroquad::{math::*, *};
 
 use crate::gfx::pixels_per_unit;
 
@@ -7,10 +7,11 @@ const HEIGHT: f32 = 0.3;
 const COLOR: macroquad::color::Color = macroquad::color::WHITE;
 
 const TRAIL_LENGTH: usize = 64;
-const TRAIL_RADIUS: f32 = 0.075;
 const TRAIL_INTERVAL: f32 = 0.01;
+const TRAIL_MAX_RADIUS: f32 = 0.075;
+const TRAIL_RADIUS_EXP: f32 = 0.5;
 const TRAIL_COLOR: macroquad::color::Color = macroquad::color::ORANGE;
-const TRAIL_ALPHA_POWER: f32 = 2.0;
+const TRAIL_ALPHA_EXP: f32 = 3.0;
 
 const ACCELERATION: f32 = 8.0;
 const MAX_SPEED: f32 = 16.0;
@@ -99,10 +100,11 @@ impl Player {
     fn draw_trail(&self) {
         for i in 0..TRAIL_LENGTH-1 {
             let point = crate::gfx::world_to_screen_pos(self.trail_pts[i]);
-            let alpha = (((TRAIL_LENGTH - i) as f32) / (TRAIL_LENGTH as f32)).powf(TRAIL_ALPHA_POWER);
+            let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
+            let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
+            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * pixels_per_unit();
 
-            shapes::draw_circle(point.x, point.y, TRAIL_RADIUS * pixels_per_unit(),
-                TRAIL_COLOR.with_alpha(alpha));
+            shapes::draw_circle(point.x, point.y, radius, color);
         }
     }
 
