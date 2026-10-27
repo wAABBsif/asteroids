@@ -1,7 +1,5 @@
 use macroquad::{math::*, *};
 
-use crate::gfx::pixels_per_unit;
-
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
 const COLOR: macroquad::color::Color = macroquad::color::WHITE;
@@ -50,6 +48,23 @@ impl Player {
     }
 
     pub fn update(&mut self, delta: f32) {
+        self.handle_rotation();
+        self.handle_movement(delta);
+        self.update_transform(delta);
+        self.update_trail(delta);
+    }
+
+    fn handle_rotation(&mut self) {
+        self.angular_velocity = 0.0;
+        if input::is_key_down(input::KeyCode::D) || input::is_key_down(input::KeyCode::Right) {
+            self.angular_velocity += TURN_SPEED;
+        }
+        if input::is_key_down(input::KeyCode::A) || input::is_key_down(input::KeyCode::Left) {
+            self.angular_velocity -= TURN_SPEED;
+        }
+    }
+
+    fn handle_movement(&mut self, delta: f32) {
         if input::is_key_down(input::KeyCode::W) || input::is_key_down(input::KeyCode::Up) {
             self.is_accelerating = true;
             self.velocity += self.up_direction() * ACCELERATION * delta;
@@ -58,19 +73,11 @@ impl Player {
         }
         self.velocity *= (1.0 - DRAG).powf(delta);
         self.velocity = self.velocity.clamp_length_max(MAX_SPEED);
+    }
 
-        self.angular_velocity = 0.0;
-        if input::is_key_down(input::KeyCode::D) || input::is_key_down(input::KeyCode::Right) {
-            self.angular_velocity += TURN_SPEED;
-        }
-        if input::is_key_down(input::KeyCode::A) || input::is_key_down(input::KeyCode::Left) {
-            self.angular_velocity -= TURN_SPEED;
-        }
-
+    fn update_transform(&mut self, delta: f32) {
         self.position += self.velocity * delta;
         self.angle += self.angular_velocity * delta;
-
-        self.update_trail(delta);
     }
 
     fn update_trail(&mut self, delta: f32) {
@@ -84,7 +91,6 @@ impl Player {
             };
             self.trail.timer += TRAIL_INTERVAL;
         }
-        println!("{}", 1.0 / delta);
     }
 
     pub fn draw(&self) {
@@ -114,7 +120,7 @@ impl Player {
             let point = crate::gfx::world_to_screen_pos(self.trail.pts[trail_idx]);
             let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
             let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
-            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * pixels_per_unit();
+            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * crate::gfx::pixels_per_unit();
 
             shapes::draw_circle(point.x, point.y, radius, color);
         }
