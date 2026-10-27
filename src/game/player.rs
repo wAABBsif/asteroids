@@ -19,6 +19,7 @@ const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
 struct Trail {
+    head: usize,
     timer: f32,
     pts: [Vec2; TRAIL_LENGTH],
 }
@@ -42,6 +43,7 @@ impl Player {
             is_accelerating: false,
             trail: Trail {
                 timer: 0.0,
+                head: 0,
                 pts: [Vec2::ZERO; TRAIL_LENGTH],
             },
         }
@@ -74,16 +76,15 @@ impl Player {
     fn update_trail(&mut self, delta: f32) {
         self.trail.timer -= delta;
         while self.trail.timer <= 0.0 {
-            for i in (1..TRAIL_LENGTH).rev() {
-                self.trail.pts[i] = self.trail.pts[i - 1];
-            }
-            self.trail.pts[0] = if self.is_accelerating {
+            self.trail.head = (self.trail.head + 1) % TRAIL_LENGTH;
+            self.trail.pts[self.trail.head] = if self.is_accelerating {
                 self.position - self.up_direction() * HEIGHT - self.velocity * -self.trail.timer
             } else {
                 vec2(f32::NAN, f32::NAN)
             };
             self.trail.timer += TRAIL_INTERVAL;
         }
+        println!("{}", 1.0 / delta);
     }
 
     pub fn draw(&self) {
@@ -105,7 +106,12 @@ impl Player {
 
     fn draw_trail(&self) {
         for i in 0..TRAIL_LENGTH-1 {
-            let point = crate::gfx::world_to_screen_pos(self.trail.pts[i]);
+            let trail_idx = if i <= self.trail.head {
+                self.trail.head - i
+            } else {
+                TRAIL_LENGTH + self.trail.head - i
+            };
+            let point = crate::gfx::world_to_screen_pos(self.trail.pts[trail_idx]);
             let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
             let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
             let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * pixels_per_unit();
