@@ -78,6 +78,20 @@ impl Player {
     fn update_transform(&mut self, delta: f32) {
         self.position += self.velocity * delta;
         self.angle += self.angular_velocity * delta;
+        let wrap_radius = WIDTH.max(HEIGHT);
+
+        if self.position.x - wrap_radius > crate::gfx::world_size().x / 2.0
+            || self.position.x + wrap_radius < -crate::gfx::world_size().x / 2.0
+        {
+            self.position.x = -self.position.x;
+        }
+
+        
+        if self.position.y - wrap_radius > crate::gfx::world_size().y / 2.0
+            || self.position.y + wrap_radius < -crate::gfx::world_size().y / 2.0
+        {
+            self.position.y = -self.position.y;
+        }
     }
 
     fn update_trail(&mut self, delta: f32) {
