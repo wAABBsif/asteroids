@@ -18,14 +18,18 @@ const MAX_SPEED: f32 = 16.0;
 const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
+struct Trail {
+    timer: f32,
+    pts: [Vec2; TRAIL_LENGTH],
+}
+
 pub struct Player {
     position: Vec2,
     velocity: Vec2,
     angle: f32,
     angular_velocity: f32,
-    trail_timer: f32,
-    trail_pts: [Vec2; TRAIL_LENGTH],
-    is_accelerating: bool
+    is_accelerating: bool,
+    trail: Trail
 }
 
 impl Player {
@@ -35,9 +39,11 @@ impl Player {
             velocity: Vec2::ZERO,
             angle:  0.0,
             angular_velocity: 0.0,
-            trail_timer: 0.0,
-            trail_pts: [Vec2::ZERO; TRAIL_LENGTH],
-            is_accelerating: false
+            is_accelerating: false,
+            trail: Trail {
+                timer: 0.0,
+                pts: [Vec2::ZERO; TRAIL_LENGTH],
+            },
         }
     }
 
@@ -66,17 +72,17 @@ impl Player {
     }
 
     fn update_trail(&mut self, delta: f32) {
-        self.trail_timer -= delta;
-        while self.trail_timer <= 0.0 {
+        self.trail.timer -= delta;
+        while self.trail.timer <= 0.0 {
             for i in (1..TRAIL_LENGTH).rev() {
-                self.trail_pts[i] = self.trail_pts[i - 1];
+                self.trail.pts[i] = self.trail.pts[i - 1];
             }
-            self.trail_pts[0] = if self.is_accelerating {
-                self.position - self.up_direction() * HEIGHT - self.velocity * -self.trail_timer
+            self.trail.pts[0] = if self.is_accelerating {
+                self.position - self.up_direction() * HEIGHT - self.velocity * -self.trail.timer
             } else {
                 vec2(f32::NAN, f32::NAN)
             };
-            self.trail_timer += TRAIL_INTERVAL;
+            self.trail.timer += TRAIL_INTERVAL;
         }
     }
 
@@ -99,7 +105,7 @@ impl Player {
 
     fn draw_trail(&self) {
         for i in 0..TRAIL_LENGTH-1 {
-            let point = crate::gfx::world_to_screen_pos(self.trail_pts[i]);
+            let point = crate::gfx::world_to_screen_pos(self.trail.pts[i]);
             let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
             let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
             let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * pixels_per_unit();
