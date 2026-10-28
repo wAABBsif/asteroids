@@ -12,7 +12,6 @@ const TRAIL_COLOR: color::Color = color::ORANGE;
 const TRAIL_ALPHA_EXP: f32 = 3.0;
 
 const ACCELERATION: f32 = 8.0;
-const MAX_SPEED: f32 = 16.0;
 const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
@@ -72,7 +71,6 @@ impl Player {
             self.is_accelerating = false;
         }
         self.velocity *= (1.0 - DRAG).powf(delta);
-        self.velocity = self.velocity.clamp_length_max(MAX_SPEED);
     }
 
     fn update_transform(&mut self, delta: f32) {
