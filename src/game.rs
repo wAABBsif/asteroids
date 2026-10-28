@@ -1,4 +1,5 @@
 mod player;
+mod bullet;
 
 use player::Player;
 

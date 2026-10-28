@@ -2,13 +2,13 @@ use macroquad::{math::*, *};
 
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
-const COLOR: macroquad::color::Color = macroquad::color::WHITE;
+const COLOR: color::Color = color::WHITE;
 
 const TRAIL_LENGTH: usize = 64;
 const TRAIL_INTERVAL: f32 = 0.01;
 const TRAIL_MAX_RADIUS: f32 = 0.075;
 const TRAIL_RADIUS_EXP: f32 = 0.5;
-const TRAIL_COLOR: macroquad::color::Color = macroquad::color::ORANGE;
+const TRAIL_COLOR: color::Color = color::ORANGE;
 const TRAIL_ALPHA_EXP: f32 = 3.0;
 
 const ACCELERATION: f32 = 8.0;
