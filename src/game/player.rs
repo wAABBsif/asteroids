@@ -99,7 +99,7 @@ impl Player {
             self.trail.pts[self.trail.head] = if self.is_accelerating {
                 self.position - self.up_direction() * HEIGHT - self.velocity * -self.trail.timer
             } else {
-                vec2(f32::NAN, f32::NAN)
+                Vec2::NAN
             };
             self.trail.timer += TRAIL_INTERVAL;
         }
