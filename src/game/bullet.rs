@@ -6,7 +6,7 @@ const COLOR: color::Color = color::BLUE;
 const SPEED: f32 = 8.0;
 const LIFETIME: f32 = 2.0;
 
-const MAX_COUNT: usize = 16;
+const MAX_COUNT: usize = 32;
 
 #[derive(Copy, Clone)]
 pub struct Bullet {
