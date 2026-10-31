@@ -1,5 +1,7 @@
 use macroquad::{math::*, *};
 
+use crate::game::{GameState, bullet::BulletManager};
+
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
 const COLOR: color::Color = color::WHITE;
@@ -46,10 +48,11 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, delta: f32) {
+    pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager) {
         self.handle_rotation();
         self.handle_movement(delta);
         self.update_transform(delta);
+        self.handle_shooting(bullet_manager);
         self.update_trail(delta);
     }
 
@@ -89,6 +92,14 @@ impl Player {
             || self.position.y + wrap_radius < -crate::gfx::world_size().y / 2.0
         {
             self.position.y = -self.position.y;
+        }
+    }
+
+    fn handle_shooting(&self, bullet_manager: &mut BulletManager) {
+        if input::is_key_pressed(input::KeyCode::Space)
+            || input::is_mouse_button_pressed(input::MouseButton::Left)
+        {
+            bullet_manager.create_bullet(self.position, self.angle);
         }
     }
 
