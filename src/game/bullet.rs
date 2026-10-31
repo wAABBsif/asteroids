@@ -1,6 +1,8 @@
 use macroquad::{math::*, *};
+use std::f32::consts::PI;
 
 const RADIUS: f32 = 0.05;
+const LENGTH: f32 = 0.35;
 const COLOR: color::Color = color::BLUE;
 
 const SPEED: f32 = 8.0;
@@ -49,7 +51,18 @@ impl Bullet {
         }
 
         let point = crate::gfx::world_to_screen_pos(self.position);
+        let vertices = [
+            crate::gfx::world_to_screen_pos(self.position + self.get_right_direction() * RADIUS),
+            crate::gfx::world_to_screen_pos(self.position - self.get_right_direction() * RADIUS),
+            crate::gfx::world_to_screen_pos(self.position - self.velocity.normalize() * LENGTH)
+        ];
+
+        shapes::draw_triangle(vertices[0], vertices[1], vertices[2], COLOR);
         shapes::draw_circle(point.x, point.y, RADIUS * crate::gfx::pixels_per_unit(), COLOR);
+    }
+
+    pub fn get_right_direction(&self) -> Vec2 {
+        self.velocity.normalize().rotate(Vec2::from_angle(PI * 0.5))
     }
 }
 
