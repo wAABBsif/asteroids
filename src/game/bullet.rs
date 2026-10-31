@@ -1,6 +1,8 @@
 use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
+use crate::game::wrap::Wrap;
+
 const RADIUS: f32 = 0.05;
 const LENGTH: f32 = 0.35;
 const COLOR: color::Color = color::BLUE;
@@ -39,6 +41,8 @@ impl Bullet {
         }
 
         self.position += self.velocity * delta;
+        self.handle_wrap();
+
         self.time_left -= delta;
         if self.time_left <= 0.0 {
             self.is_active = false;
@@ -63,6 +67,20 @@ impl Bullet {
 
     pub fn get_right_direction(&self) -> Vec2 {
         self.velocity.normalize().rotate(Vec2::from_angle(PI * 0.5))
+    }
+}
+
+impl Wrap for Bullet {
+    fn get_wrap_position(&self) -> Vec2 {
+        return self.position;
+    }
+
+    fn set_wrap_position(&mut self, value: Vec2) {
+        self.position = value;
+    }
+
+    fn get_size(&self) -> f32 {
+        return RADIUS + LENGTH;
     }
 }
 

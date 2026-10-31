@@ -1,5 +1,8 @@
 mod player;
 mod bullet;
+mod wrap;
+
+use macroquad::math::*;
 
 use player::Player;
 use bullet::BulletManager;

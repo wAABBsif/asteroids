@@ -1,6 +1,6 @@
 use macroquad::{math::*, *};
 
-use crate::game::{GameState, bullet::BulletManager};
+use crate::game::{bullet::BulletManager, wrap::Wrap};
 
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
@@ -79,20 +79,7 @@ impl Player {
     fn update_transform(&mut self, delta: f32) {
         self.position += self.velocity * delta;
         self.angle += self.angular_velocity * delta;
-        let wrap_radius = WIDTH.max(HEIGHT);
-
-        if self.position.x - wrap_radius > crate::gfx::world_size().x / 2.0
-            || self.position.x + wrap_radius < -crate::gfx::world_size().x / 2.0
-        {
-            self.position.x = -self.position.x;
-        }
-
-        
-        if self.position.y - wrap_radius > crate::gfx::world_size().y / 2.0
-            || self.position.y + wrap_radius < -crate::gfx::world_size().y / 2.0
-        {
-            self.position.y = -self.position.y;
-        }
+        self.handle_wrap();
     }
 
     fn handle_shooting(&self, bullet_manager: &mut BulletManager) {
@@ -156,5 +143,19 @@ impl Player {
 
     fn up_direction(&self) -> Vec2 {
         vec2(1.0, 0.0).rotate(Vec2::from_angle(self.angle))
+    }
+}
+
+impl Wrap for Player {
+    fn get_wrap_position(&self) -> Vec2 {
+        return self.position;
+    }
+
+    fn set_wrap_position(&mut self, value: Vec2) {
+        self.position = value;
+    }
+
+    fn get_size(&self) -> f32 {
+        return HEIGHT.max(WIDTH);
     }
 }
