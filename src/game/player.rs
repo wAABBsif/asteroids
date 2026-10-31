@@ -150,10 +150,10 @@ impl Player {
     }
 
     fn right_direction(&self) -> Vec2 {
-        vec2(1.0, 0.0).rotate(Vec2::from_angle(self.angle))
+        vec2(0.0, -1.0).rotate(Vec2::from_angle(self.angle))
     }
 
     fn up_direction(&self) -> Vec2 {
-        vec2(0.0, -1.0).rotate(Vec2::from_angle(self.angle))
+        vec2(1.0, 0.0).rotate(Vec2::from_angle(self.angle))
     }
 }
