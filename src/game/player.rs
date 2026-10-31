@@ -99,7 +99,8 @@ impl Player {
         if input::is_key_pressed(input::KeyCode::Space)
             || input::is_mouse_button_pressed(input::MouseButton::Left)
         {
-            bullet_manager.create_bullet(self.position, self.angle);
+            let fire_point = self.position + self.up_direction() * HEIGHT;
+            bullet_manager.create_bullet(fire_point, self.angle);
         }
     }
 
