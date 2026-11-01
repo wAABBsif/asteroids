@@ -1,7 +1,7 @@
 use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
-use crate::game::wrap::Wrap;
+use crate::game::{asteroid::AsteroidManager, wrap::Wrap};
 
 const RADIUS: f32 = 0.05;
 const LENGTH: f32 = 0.35;
@@ -36,16 +36,27 @@ impl Bullet {
         }
     }
 
-    pub fn update(&mut self, delta: f32) {
+    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager) {
         if !self.is_active {
             return;
         }
 
         self.position += self.velocity * delta;
         self.handle_wrap();
+        self.handle_collision(asteroid_manager);
 
-        self.time_left -= delta;
+        self.time_left -= delta; 
         if self.time_left <= 0.0 {
+            self.is_active = false;
+        }
+    }
+
+    fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager) {
+        let colliding = asteroid_manager.get_asteroid_at_point(self.position);
+        if colliding.is_some() {
+            let colliding = colliding.unwrap();
+            println!("Bullet collided with asteroid at {} with radius {}",
+                colliding.position, colliding.radius);
             self.is_active = false;
         }
     }
@@ -113,9 +124,9 @@ impl BulletManager {
         Some(result)
     }
 
-    pub fn update(&mut self, delta: f32) {
+    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager) {
         for b in &mut self.bullets {
-            b.update(delta);
+            b.update(delta, asteroid_manager);
         }
     }
 

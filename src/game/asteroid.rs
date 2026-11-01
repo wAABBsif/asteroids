@@ -13,10 +13,10 @@ const MAX_COUNT: usize = 48;
 
 #[derive(Copy, Clone)]
 pub struct Asteroid {
-    position: Vec2,
-    velocity: Vec2,
-    radius: f32,
-    is_active: bool,
+    pub position: Vec2,
+    pub velocity: Vec2,
+    pub radius: f32,
+    pub is_active: bool,
 }
 
 pub struct AsteroidManager {
@@ -50,6 +50,10 @@ impl Asteroid {
 
         let point = crate::gfx::world_to_screen_pos(self.position);
         shapes::draw_circle(point.x, point.y, self.radius * crate::gfx::pixels_per_unit(), COLOR);
+    }
+
+    pub fn is_point_inside(&self, point: Vec2) -> bool {
+        return self.position.distance_squared(point) <= self.radius * self.radius
     }
 
     fn max_speed(radius: f32) -> f32 {
@@ -109,5 +113,14 @@ impl AsteroidManager {
         for a in self.asteroids {
             a.draw();
         }
+    }
+
+    pub fn get_asteroid_at_point(&self, point: Vec2) -> Option<&Asteroid> {
+        for asteroid in &self.asteroids {
+            if asteroid.is_point_inside(point) {
+                return Some(asteroid)
+            }
+        }
+        None
     }
 }
