@@ -1,5 +1,6 @@
 mod player;
 mod bullet;
+mod asteroid;
 mod wrap;
 
 use macroquad::math::*;
