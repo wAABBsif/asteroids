@@ -7,10 +7,12 @@ use macroquad::math::*;
 
 use player::Player;
 use bullet::BulletManager;
+use asteroid::AsteroidManager;
 
 struct GameState {
     pub player: Player,
-    pub bullet_manager: BulletManager
+    pub bullet_manager: BulletManager,
+    pub asteroid_manager: AsteroidManager,
 }
 
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
@@ -33,6 +35,7 @@ fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
     let state = GameState {
         player: Player::new(),
         bullet_manager: BulletManager::new(),
+        asteroid_manager: AsteroidManager::new(),
     };
 
     Ok(state)
@@ -41,6 +44,7 @@ fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
 async fn update(state: &mut GameState, delta: f32) -> Result<(), Box<dyn std::error::Error>> {
     state.player.update(delta, &mut state.bullet_manager);
     state.bullet_manager.update(delta);
+    state.asteroid_manager.update(delta);
 
     Ok(())
 }
@@ -49,6 +53,7 @@ async fn draw(state: &mut GameState) -> Result<(), Box<dyn std::error::Error>> {
     macroquad::window::clear_background(macroquad::color::BLACK);
     state.bullet_manager.draw();
     state.player.draw();
+    state.asteroid_manager.draw();
     macroquad::window::next_frame().await;
 
     Ok(())

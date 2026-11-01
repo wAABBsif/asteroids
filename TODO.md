@@ -7,7 +7,7 @@ This file contains the list of stuff there still is to do.
 - [x] Create player
 - [x] Create bullet
 - [x] Allow player to shoot bullets
-- [x] Create asteroid (movement and size variants)
+- [x] Implement asteroid manager
 - [ ] Add collision between bullets and asteroids
 - [ ] Add collision between player and asteroids
 

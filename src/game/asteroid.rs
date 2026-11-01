@@ -1,3 +1,5 @@
+use std::f32::NAN;
+
 use macroquad::{math::*, *};
 
 use crate::game::wrap::Wrap;
@@ -7,11 +9,19 @@ const MAX_SPEED_COEFFICIENT: f32 = 1.0;
 
 const COLOR: color::Color = color::GRAY;
 
+const MAX_COUNT: usize = 48;
+
+#[derive(Copy, Clone)]
 pub struct Asteroid {
     position: Vec2,
     velocity: Vec2,
     radius: f32,
     is_active: bool,
+}
+
+pub struct AsteroidManager {
+    asteroids: [Asteroid; MAX_COUNT],
+    head: usize,
 }
 
 impl Asteroid {
@@ -58,5 +68,46 @@ impl Wrap for Asteroid {
 
     fn get_size(&self) -> f32 {
         return self.radius;
+    }
+}
+
+impl AsteroidManager {
+    pub fn new() -> AsteroidManager {
+        AsteroidManager {
+            asteroids: [
+                Asteroid {
+                    position: Vec2::NAN,
+                    velocity: Vec2::NAN,
+                    radius: NAN,
+                    is_active: false,
+                }; MAX_COUNT
+            ],
+            head: 0,
+        }
+    }
+
+    pub fn create_asteroid(&mut self, position: Vec2, radius: f32, angle: f32, speed_factor: f32)
+        -> Option<&Asteroid>
+    {
+        if self.asteroids[self.head].is_active {
+            return None
+        }
+
+        self.asteroids[self.head] = Asteroid::new(position, radius, angle, speed_factor);
+        let result = &self.asteroids[self.head];
+        self.head = (self.head + 1) % MAX_COUNT;
+        Some(result)
+    }
+
+    pub fn update(&mut self, delta: f32) {
+        for a in &mut self.asteroids {
+            a.update(delta);
+        }
+    }
+
+    pub fn draw(&self) {
+        for a in self.asteroids {
+            a.draw();
+        }
     }
 }
