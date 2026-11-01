@@ -5,8 +5,8 @@ This file contains the list of stuff there still is to do.
 ## Objects
 
 - [x] Create player
-- [ ] Create bullet
-- [ ] Allow player to shoot bullets
+- [x] Create bullet
+- [x] Allow player to shoot bullets
 - [ ] Create asteroid (movement and size variants)
 - [ ] Add collision between bullets and asteroids
 - [ ] Add collision between player and asteroids
