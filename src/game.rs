@@ -42,8 +42,8 @@ fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
 }
 
 async fn update(state: &mut GameState, delta: f32) -> Result<(), Box<dyn std::error::Error>> {
-    state.player.update(delta, &mut state.bullet_manager);
-    state.bullet_manager.update(delta);
+    state.player.update(delta, &mut state.bullet_manager, &mut state.asteroid_manager);
+    state.bullet_manager.update(delta, &mut state.asteroid_manager);
     state.asteroid_manager.update(delta);
 
     Ok(())

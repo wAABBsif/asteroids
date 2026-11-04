@@ -1,6 +1,6 @@
 use macroquad::{math::*, *};
 
-use crate::game::{bullet::BulletManager, wrap::Wrap};
+use crate::game::{bullet::BulletManager, asteroid::AsteroidManager, wrap::Wrap};
 
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
@@ -48,11 +48,13 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager) {
+    pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager,
+        asteroid_manager: &mut AsteroidManager) {
         self.handle_rotation();
         self.handle_movement(delta);
         self.update_transform(delta);
         self.handle_shooting(bullet_manager);
+        self.handle_collision(asteroid_manager);
         self.update_trail(delta);
     }
 
@@ -88,6 +90,15 @@ impl Player {
         {
             let fire_point = self.position + self.up_direction() * HEIGHT;
             bullet_manager.create_bullet(fire_point, self.angle);
+        }
+    }
+
+    fn handle_collision(&self, asteroid_manager: &mut AsteroidManager) {
+        let colliding = asteroid_manager.get_asteroid_at_point(self.position);
+        if colliding.is_some() {
+            let colliding = colliding.unwrap();
+            println!("Player collided with asteroid at {} with radius {}", 
+                colliding.position, colliding.radius);
         }
     }
 
