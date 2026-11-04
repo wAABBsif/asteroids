@@ -8,20 +8,18 @@ pub trait Wrap {
     fn handle_wrap(&mut self) {
         let mut position = self.get_wrap_position();
         let size = self.get_size();
+        let world_radius = crate::gfx::world_size() * 0.5;
+        let bounds = vec2(world_radius.x + size, world_radius.y + size);
 
-        if position.x - size > crate::gfx::world_size().x / 2.0
-            || position.x + size < -crate::gfx::world_size().x / 2.0
-        {
+        if position.x < -bounds.x || position.x > bounds.x {
             position.x = -position.x;
         }
 
-
-        if position.y - size > crate::gfx::world_size().y / 2.0
-            || position.y + size < -crate::gfx::world_size().y / 2.0
-        {
+        if position.y < -bounds.y || position.y > bounds.y {
             position.y = -position.y;
         }
 
+        position = position.clamp(-bounds, bounds);
         self.set_wrap_position(position);
     }
 }
