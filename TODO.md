@@ -9,13 +9,15 @@ This file contains the list of stuff there still is to do.
 - [x] Allow player to shoot bullets
 - [x] Implement asteroid manager
 - [x] Add collision between bullets and asteroids
-- [ ] Add collision between player and asteroids
+- [x] Add collision between player and asteroids
 
 ## Gameplay
 - [ ] Add score system
-- [ ] Add UI
-- [ ] Implement asteroid spawning
+- [ ] Add score UI
+- [x] Implement asteroid spawning
+- [ ] Implement asteroid waves
 - [ ] Implement lives system
+- [ ] Implement lives UI
 
 ## Meta
 - [ ] Add pausing
