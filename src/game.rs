@@ -30,8 +30,11 @@ fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
     println!("Initializing game");
 
     //handle program termination manually
+    println!("Disabling macroquad auto-termination");
     macroquad::input::prevent_quit();
 
+
+    println!("Initializing game state");
     let state = GameState {
         player: Player::new(),
         bullet_manager: BulletManager::new(),
