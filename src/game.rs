@@ -28,6 +28,10 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
 fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
     println!("Initializing game");
+    println!("Seeding rng");
+    let unix_epoch = std::time::UNIX_EPOCH;
+    let now = std::time::SystemTime::now().duration_since(unix_epoch)?;
+    macroquad::rand::srand(now.as_secs());
 
     //handle program termination manually
     println!("Disabling macroquad auto-termination");

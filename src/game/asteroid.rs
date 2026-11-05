@@ -4,6 +4,11 @@ use macroquad::{math::*, *};
 
 use crate::game::wrap::Wrap;
 
+const SPAWN_RADIUS: f32 = 1.0;
+const DECREASE_RADIUS: f32 = 0.3;
+const MIN_RADIUS: f32 = 0.4;
+
+const MIN_SPEED_FACTOR: f32 = 0.1;
 const MAX_SPEED_CONSTANT: f32 = 2.0;
 const MAX_SPEED_COEFFICIENT: f32 = 1.0;
 
@@ -90,17 +95,41 @@ impl AsteroidManager {
         }
     }
 
-    pub fn create_asteroid(&mut self, position: Vec2, radius: f32, angle: f32, speed_factor: f32)
-        -> Option<&Asteroid>
+    fn create_asteroid(&mut self, position: Vec2, radius: f32) -> Option<&Asteroid>
     {
         if self.asteroids[self.head].is_active {
             return None
         }
 
+        let angle = rand::RandomRange::gen_range(-std::f32::consts::PI, std::f32::consts::PI);
+        let speed_factor = rand::RandomRange::gen_range(MIN_SPEED_FACTOR, 1.0);
         self.asteroids[self.head] = Asteroid::new(position, radius, angle, speed_factor);
         let result = &self.asteroids[self.head];
         self.head = (self.head + 1) % MAX_COUNT;
         Some(result)
+    }
+
+    pub fn spawn_asteroid(&mut self) -> Option<&Asteroid> {
+        let perimeter = (crate::gfx::world_size().x + crate::gfx::world_size().y) * 2.0;
+        let perimeter_point = rand::gen_range(0.0, perimeter);
+        let position: Vec2;
+        if perimeter_point < crate::gfx::world_size().x {
+            let perimeter_point = perimeter_point - crate::gfx::world_size().x * 0.5;
+            position = vec2(perimeter_point, f32::INFINITY);
+        } else if perimeter_point < crate::gfx::world_size().x + crate::gfx::world_size().y {
+            let perimeter_point = perimeter_point - crate::gfx::world_size().x * 1.5;
+            position = vec2(f32::INFINITY, perimeter_point);
+        } else if perimeter_point < perimeter - crate::gfx::world_size().y {
+            let perimeter_point =
+                perimeter_point - crate::gfx::world_size().x * 1.5 - crate::gfx::world_size().y;
+            position = vec2(perimeter_point, f32::NEG_INFINITY);
+        } else {
+            let perimeter_point = perimeter_point
+                - crate::gfx::world_size().x * 2.0 - crate::gfx::world_size().y * 1.5;
+            position = vec2(f32::NEG_INFINITY, perimeter_point);
+        }
+
+        self.create_asteroid(position, SPAWN_RADIUS)
     }
 
     pub fn update(&mut self, delta: f32) {
