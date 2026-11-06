@@ -2,7 +2,7 @@ use std::f32::NAN;
 
 use macroquad::{math::*, *};
 
-use crate::game::wrap::Wrap;
+use crate::game::{score::ScoreManager, wrap::Wrap};
 
 const SPAWN_RADIUS: f32 = 1.0;
 const DECREASE_RADIUS: f32 = 0.3;
@@ -11,6 +11,9 @@ const MIN_RADIUS: f32 = 0.4;
 const MIN_SPEED_FACTOR: f32 = 0.1;
 const MAX_SPEED_CONSTANT: f32 = 2.0;
 const MAX_SPEED_COEFFICIENT: f32 = 1.0;
+
+const SCORE_RADIUS_FACTOR: f32 = 100.0;
+const SCORE_COMBO_FACTOR: u64 = 20;
 
 const COLOR: color::Color = color::GRAY;
 
@@ -55,9 +58,6 @@ impl Asteroid {
 
         let point = crate::gfx::world_to_screen_pos(self.position);
         shapes::draw_circle(point.x, point.y, self.radius * crate::gfx::pixels_per_unit(), COLOR);
-    }
-
-    pub fn destroy(&mut self, asteroid_manager: &mut AsteroidManager) {
     }
 
     pub fn is_point_inside(&self, point: Vec2) -> bool {
@@ -121,8 +121,11 @@ impl AsteroidManager {
         self.create_asteroid(position, SPAWN_RADIUS)
     }
 
-    pub fn destroy_asteroid(&mut self, id: usize) {
+    pub fn destroy_asteroid(&mut self, id: usize, score_manager: &mut ScoreManager) {
         let asteroid = &mut self.asteroids[id];
+        score_manager.score += (asteroid.radius * SCORE_RADIUS_FACTOR).round() as u64;
+        score_manager.score += score_manager.combo as u64 * SCORE_COMBO_FACTOR;
+        score_manager.increase_combo();
         asteroid.is_active = false;
         if asteroid.radius <= MIN_RADIUS {
             return;

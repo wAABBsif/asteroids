@@ -1,7 +1,7 @@
 use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
-use crate::game::{asteroid::AsteroidManager, wrap::Wrap};
+use crate::game::{asteroid::AsteroidManager, score::ScoreManager, wrap::Wrap};
 
 const RADIUS: f32 = 0.05;
 const LENGTH: f32 = 0.35;
@@ -36,14 +36,16 @@ impl Bullet {
         }
     }
 
-    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager) {
+    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
+        score_manager: &mut ScoreManager)
+    {
         if !self.is_active {
             return;
         }
 
         self.position += self.velocity * delta;
         self.handle_wrap();
-        self.handle_collision(asteroid_manager);
+        self.handle_collision(asteroid_manager, score_manager);
 
         self.time_left -= delta; 
         if self.time_left <= 0.0 {
@@ -51,11 +53,13 @@ impl Bullet {
         }
     }
 
-    fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager) {
+    fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager,
+        score_manager: &mut ScoreManager)
+    {
         let colliding = asteroid_manager.get_asteroid_at_point(self.position);
         if colliding.is_some() {
             let colliding = colliding.unwrap();
-            asteroid_manager.destroy_asteroid(colliding);
+            asteroid_manager.destroy_asteroid(colliding, score_manager);
             self.is_active = false;
         }
     }
@@ -130,9 +134,11 @@ impl BulletManager {
         Some(&mut self.bullets[id])
     }
 
-    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager) {
+    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
+        score_manager: &mut ScoreManager)
+    {
         for b in &mut self.bullets {
-            b.update(delta, asteroid_manager);
+            b.update(delta, asteroid_manager, score_manager);
         }
     }
 

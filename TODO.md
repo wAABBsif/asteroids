@@ -13,7 +13,7 @@ This file contains the list of stuff there still is to do.
 - [x] Add asteroid splitting
 
 ## Gameplay
-- [ ] Add score system
+- [x] Add score system
 - [ ] Add score UI
 - [x] Implement asteroid spawning
 - [ ] Implement asteroid waves
