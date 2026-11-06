@@ -10,6 +10,7 @@ This file contains the list of stuff there still is to do.
 - [x] Implement asteroid manager
 - [x] Add collision between bullets and asteroids
 - [x] Add collision between player and asteroids
+- [x] Add asteroid splitting
 
 ## Gameplay
 - [ ] Add score system

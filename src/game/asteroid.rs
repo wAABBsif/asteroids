@@ -57,6 +57,9 @@ impl Asteroid {
         shapes::draw_circle(point.x, point.y, self.radius * crate::gfx::pixels_per_unit(), COLOR);
     }
 
+    pub fn destroy(&mut self, asteroid_manager: &mut AsteroidManager) {
+    }
+
     pub fn is_point_inside(&self, point: Vec2) -> bool {
         return self.position.distance_squared(point) <= self.radius * self.radius
     }
@@ -118,6 +121,18 @@ impl AsteroidManager {
         self.create_asteroid(position, SPAWN_RADIUS)
     }
 
+    pub fn destroy_asteroid(&mut self, id: usize) {
+        let asteroid = &mut self.asteroids[id];
+        asteroid.is_active = false;
+        if asteroid.radius <= MIN_RADIUS {
+            return;
+        }
+        let split_radius = asteroid.radius - DECREASE_RADIUS;
+        let position = asteroid.position;
+        self.create_asteroid(position, split_radius);
+        self.create_asteroid(position, split_radius);
+    }
+
     pub fn get_asteroid(&mut self, id: usize) -> Option<&mut Asteroid> {
         if !self.asteroids[id].is_active {
             return None
@@ -139,6 +154,9 @@ impl AsteroidManager {
 
     pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<usize> {
         for i in 0..self.asteroids.len() {
+            if !self.asteroids[i].is_active {
+                continue
+            }
             if self.asteroids[i].is_point_inside(point) {
                 return Some(i)
             }
