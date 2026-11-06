@@ -55,6 +55,7 @@ impl Bullet {
         let colliding = asteroid_manager.get_asteroid_at_point(self.position);
         if colliding.is_some() {
             let colliding = colliding.unwrap();
+            let colliding = asteroid_manager.get_asteroid(colliding).unwrap();
             println!("Bullet collided with asteroid at {} with radius {}",
                 colliding.position, colliding.radius);
             self.is_active = false;
@@ -114,14 +115,21 @@ impl BulletManager {
         }
     }
 
-    pub fn create_bullet(&mut self, position: Vec2, angle: f32) -> Option<&Bullet> {
+    pub fn create_bullet(&mut self, position: Vec2, angle: f32) -> Option<usize> {
         if self.bullets[self.head].is_active {
             return None
         }
         self.bullets[self.head] = Bullet::new(position, angle);
-        let result = &self.bullets[self.head];
+        let result = self.head;
         self.head = (self.head + 1) % MAX_COUNT;
         Some(result)
+    }
+
+    pub fn get_bullet(&mut self, id: usize) -> Option<&mut Bullet> {
+        if !self.bullets[id].is_active {
+            return None;
+        }
+        Some(&mut self.bullets[id])
     }
 
     pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager) {

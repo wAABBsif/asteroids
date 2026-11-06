@@ -21,7 +21,7 @@ pub struct Asteroid {
     pub position: Vec2,
     pub velocity: Vec2,
     pub radius: f32,
-    pub is_active: bool,
+    pub is_active: bool
 }
 
 pub struct AsteroidManager {
@@ -35,7 +35,7 @@ impl Asteroid {
             position: position,
             velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
             radius: radius,
-            is_active: true,
+            is_active: true
         }
     }
 
@@ -59,10 +59,6 @@ impl Asteroid {
 
     pub fn is_point_inside(&self, point: Vec2) -> bool {
         return self.position.distance_squared(point) <= self.radius * self.radius
-    }
-
-    pub fn destroy(&mut self) {
-        self.is_active = false;
     }
 
     fn max_speed(radius: f32) -> f32 {
@@ -92,28 +88,14 @@ impl AsteroidManager {
                     position: Vec2::NAN,
                     velocity: Vec2::NAN,
                     radius: NAN,
-                    is_active: false,
+                    is_active: false
                 }; MAX_COUNT
             ],
             head: 0,
         }
     }
 
-    fn create_asteroid(&mut self, position: Vec2, radius: f32) -> Option<&Asteroid>
-    {
-        if self.asteroids[self.head].is_active {
-            return None
-        }
-
-        let angle = rand::RandomRange::gen_range(-std::f32::consts::PI, std::f32::consts::PI);
-        let speed_factor = rand::RandomRange::gen_range(MIN_SPEED_FACTOR, 1.0);
-        self.asteroids[self.head] = Asteroid::new(position, radius, angle, speed_factor);
-        let result = &self.asteroids[self.head];
-        self.head = (self.head + 1) % MAX_COUNT;
-        Some(result)
-    }
-
-    pub fn spawn_asteroid(&mut self) -> Option<&Asteroid> {
+    pub fn spawn_asteroid(&mut self) -> Option<usize> {
         let perimeter = (crate::gfx::world_size().x + crate::gfx::world_size().y) * 2.0;
         let perimeter_point = rand::gen_range(0.0, perimeter);
         let position: Vec2;
@@ -136,6 +118,13 @@ impl AsteroidManager {
         self.create_asteroid(position, SPAWN_RADIUS)
     }
 
+    pub fn get_asteroid(&mut self, id: usize) -> Option<&mut Asteroid> {
+        if !self.asteroids[id].is_active {
+            return None
+        }
+        Some(&mut self.asteroids[id])
+    }
+
     pub fn update(&mut self, delta: f32) {
         for a in &mut self.asteroids {
             a.update(delta);
@@ -148,15 +137,26 @@ impl AsteroidManager {
         }
     }
 
-    pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<&mut Asteroid> {
-        for asteroid in &mut self.asteroids {
-            if !asteroid.is_active {
-                continue
-            }
-            if asteroid.is_point_inside(point) {
-                return Some(asteroid)
+    pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<usize> {
+        for i in 0..self.asteroids.len() {
+            if self.asteroids[i].is_point_inside(point) {
+                return Some(i)
             }
         }
         None
+    }
+
+    fn create_asteroid(&mut self, position: Vec2, radius: f32) -> Option<usize>
+    {
+        if self.asteroids[self.head].is_active {
+            return None
+        }
+
+        let angle = rand::RandomRange::gen_range(-std::f32::consts::PI, std::f32::consts::PI);
+        let speed_factor = rand::RandomRange::gen_range(MIN_SPEED_FACTOR, 1.0);
+        self.asteroids[self.head] = Asteroid::new(position, radius, angle, speed_factor);
+        let result = self.head;
+        self.head = (self.head + 1) % MAX_COUNT;
+        Some(result)
     }
 }

@@ -97,6 +97,7 @@ impl Player {
         let colliding = asteroid_manager.get_asteroid_at_point(self.position);
         if colliding.is_some() {
             let colliding = colliding.unwrap();
+            let colliding = asteroid_manager.get_asteroid(colliding).unwrap();
             println!("Player collided with asteroid at {} with radius {}", 
                 colliding.position, colliding.radius);
         }
