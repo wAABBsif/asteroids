@@ -61,6 +61,10 @@ impl Asteroid {
         return self.position.distance_squared(point) <= self.radius * self.radius
     }
 
+    pub fn destroy(&mut self) {
+        self.is_active = false;
+    }
+
     fn max_speed(radius: f32) -> f32 {
         MAX_SPEED_CONSTANT + MAX_SPEED_COEFFICIENT / radius
     }
@@ -144,8 +148,11 @@ impl AsteroidManager {
         }
     }
 
-    pub fn get_asteroid_at_point(&self, point: Vec2) -> Option<&Asteroid> {
-        for asteroid in &self.asteroids {
+    pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<&mut Asteroid> {
+        for asteroid in &mut self.asteroids {
+            if !asteroid.is_active {
+                continue
+            }
             if asteroid.is_point_inside(point) {
                 return Some(asteroid)
             }
