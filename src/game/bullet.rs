@@ -15,9 +15,9 @@ const MAX_COUNT: usize = 32;
 
 #[derive(Copy, Clone)]
 pub struct Bullet {
-    position: Vec2,
-    velocity: Vec2,
-    time_left: f32,
+    pub position: Vec2,
+    pub velocity: Vec2,
+    pub time_left: f32,
     is_active: bool,
 }
 

@@ -21,7 +21,7 @@ pub struct Asteroid {
     pub position: Vec2,
     pub velocity: Vec2,
     pub radius: f32,
-    pub is_active: bool
+    is_active: bool
 }
 
 pub struct AsteroidManager {

@@ -24,10 +24,10 @@ struct Trail {
 }
 
 pub struct Player {
-    position: Vec2,
-    velocity: Vec2,
-    angle: f32,
-    angular_velocity: f32,
+    pub position: Vec2,
+    pub velocity: Vec2,
+    pub angle: f32,
+    pub angular_velocity: f32,
     is_accelerating: bool,
     trail: Trail
 }
