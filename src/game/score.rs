@@ -20,11 +20,14 @@ impl ScoreManager {
         if self.combo_timer < 0.0 {
             self.combo = 0;
         }
-        println!("Score: {}, Combo: {}", self.score, self.combo);
     }
 
     pub fn increase_combo(&mut self) {
         self.combo += 1;
         self.combo_timer = COMBO_TIME;
+    }
+
+    pub fn get_combo_timer_frac(&self) -> f32 {
+        self.combo_timer / COMBO_TIME
     }
 }

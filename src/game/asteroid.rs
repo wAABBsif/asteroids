@@ -13,7 +13,7 @@ const MAX_SPEED_CONSTANT: f32 = 2.0;
 const MAX_SPEED_COEFFICIENT: f32 = 1.0;
 
 const SCORE_RADIUS_FACTOR: f32 = 100.0;
-const SCORE_COMBO_FACTOR: u64 = 20;
+const SCORE_COMBO_FACTOR: u64 = 10;
 
 const COLOR: color::Color = color::GRAY;
 

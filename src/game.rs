@@ -3,6 +3,7 @@ mod bullet;
 mod asteroid;
 mod wrap;
 mod score;
+mod hud;
 
 use macroquad::math::*;
 
@@ -10,12 +11,14 @@ use player::Player;
 use bullet::BulletManager;
 use asteroid::AsteroidManager;
 use score::ScoreManager;
+use hud::HUD;
 
 struct GameState {
     pub player: Player,
     pub bullet_manager: BulletManager,
     pub asteroid_manager: AsteroidManager,
-    pub score_manager: ScoreManager
+    pub score_manager: ScoreManager,
+    pub hud: HUD,
 }
 
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,6 +45,7 @@ fn initialize() -> Result<GameState, Box<dyn std::error::Error>> {
         bullet_manager: BulletManager::new(),
         asteroid_manager: AsteroidManager::new(),
         score_manager: ScoreManager::new(),
+        hud: HUD::new(),
     };
 
     Ok(state)
@@ -61,8 +65,8 @@ async fn draw(state: &mut GameState) -> Result<(), Box<dyn std::error::Error>> {
     state.bullet_manager.draw();
     state.player.draw();
     state.asteroid_manager.draw();
+    state.hud.draw(&state.score_manager);
     macroquad::window::next_frame().await;
-
     Ok(())
 }
 
