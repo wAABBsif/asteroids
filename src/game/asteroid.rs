@@ -56,7 +56,7 @@ impl Asteroid {
             return;
         }
 
-        let point = crate::gfx::world_to_screen_pos(self.position);
+        let point = crate::gfx::world_to_screen_offset(self.position);
         shapes::draw_circle(point.x, point.y, self.radius * crate::gfx::pixels_per_unit(), COLOR);
     }
 

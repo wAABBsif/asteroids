@@ -126,9 +126,9 @@ impl Player {
         ];
 
         shapes::draw_triangle(
-            crate::gfx::world_to_screen_pos(points[0]),
-            crate::gfx::world_to_screen_pos(points[1]),
-            crate::gfx::world_to_screen_pos(points[2]),
+            crate::gfx::world_to_screen_offset(points[0]),
+            crate::gfx::world_to_screen_offset(points[1]),
+            crate::gfx::world_to_screen_offset(points[2]),
             COLOR
         );
     }
@@ -140,7 +140,7 @@ impl Player {
             } else {
                 TRAIL_LENGTH + self.trail.head - i
             };
-            let point = crate::gfx::world_to_screen_pos(self.trail.pts[trail_idx]);
+            let point = crate::gfx::world_to_screen_offset(self.trail.pts[trail_idx]);
             let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
             let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
             let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * crate::gfx::pixels_per_unit();

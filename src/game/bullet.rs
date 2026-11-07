@@ -72,18 +72,18 @@ impl Bullet {
         let alpha = clamp(self.time_left / (LIFETIME - FADE_START_TIME), 0.0, 1.0);
         let color = COLOR.with_alpha(alpha);
 
-        let point = crate::gfx::world_to_screen_pos(self.position);
+        let point = crate::gfx::world_to_screen_offset(self.position);
         let vertices = [
-            crate::gfx::world_to_screen_pos(self.position + self.get_right_direction() * RADIUS),
-            crate::gfx::world_to_screen_pos(self.position - self.get_right_direction() * RADIUS),
-            crate::gfx::world_to_screen_pos(self.position - self.velocity.normalize() * LENGTH)
+            crate::gfx::world_to_screen_offset(self.position + self.right_direction() * RADIUS),
+            crate::gfx::world_to_screen_offset(self.position - self.right_direction() * RADIUS),
+            crate::gfx::world_to_screen_offset(self.position - self.velocity.normalize() * LENGTH)
         ];
 
         shapes::draw_triangle(vertices[0], vertices[1], vertices[2], color);
         shapes::draw_circle(point.x, point.y, RADIUS * crate::gfx::pixels_per_unit(), color);
     }
 
-    pub fn get_right_direction(&self) -> Vec2 {
+    pub fn right_direction(&self) -> Vec2 {
         self.velocity.normalize().rotate(Vec2::from_angle(PI * 0.5))
     }
 }
