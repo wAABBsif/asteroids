@@ -14,9 +14,9 @@ This file contains the list of stuff there still is to do.
 
 ## Gameplay
 - [x] Add score system
-- [ ] Add score UI
+- [x] Add score UI
 - [x] Implement asteroid spawning
-- [ ] Implement asteroid waves
+- [x] Implement asteroid waves
 - [ ] Implement lives system
 - [ ] Implement lives UI
 

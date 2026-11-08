@@ -15,6 +15,10 @@ const MAX_SPEED_COEFFICIENT: f32 = 1.0;
 const SCORE_RADIUS_FACTOR: f32 = 100.0;
 const SCORE_COMBO_FACTOR: u64 = 10;
 
+const ASTEROIDS_WAVE_MIN: f32 = 2.0;
+const ASTEROIDS_WAVE_RATE: f32 = 1.0;
+const ASTEROIDS_WAVE_MAX: u64 = 11;
+
 const COLOR: color::Color = color::GRAY;
 
 const MAX_COUNT: usize = 48;
@@ -30,6 +34,7 @@ pub struct Asteroid {
 pub struct AsteroidManager {
     asteroids: [Asteroid; MAX_COUNT],
     head: usize,
+    wave_count: u64,
 }
 
 impl Asteroid {
@@ -95,7 +100,32 @@ impl AsteroidManager {
                 }; MAX_COUNT
             ],
             head: 0,
+            wave_count: 0
         }
+    }
+
+    pub fn update(&mut self, delta: f32) {
+        if self.get_asteroid_count() == 0 {
+            self.initialize_wave();
+        }
+        for a in &mut self.asteroids {
+            a.update(delta);
+        }
+    }
+
+    pub fn draw(&self) {
+        for a in self.asteroids {
+            a.draw();
+        }
+    }
+
+    pub fn initialize_wave(&mut self) {
+        let count = std::cmp::min((ASTEROIDS_WAVE_MIN + ASTEROIDS_WAVE_RATE * self.wave_count
+            as f32) as u64, ASTEROIDS_WAVE_MAX);
+        for _i in 0..count {
+            self.spawn_asteroid();
+        }
+        self.wave_count += 1;
     }
 
     pub fn spawn_asteroid(&mut self) -> Option<usize> {
@@ -143,17 +173,6 @@ impl AsteroidManager {
         Some(&mut self.asteroids[id])
     }
 
-    pub fn update(&mut self, delta: f32) {
-        for a in &mut self.asteroids {
-            a.update(delta);
-        }
-    }
-
-    pub fn draw(&self) {
-        for a in self.asteroids {
-            a.draw();
-        }
-    }
 
     pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<usize> {
         for i in 0..self.asteroids.len() {
@@ -165,6 +184,16 @@ impl AsteroidManager {
             }
         }
         None
+    }
+
+    pub fn get_asteroid_count(&self) -> usize {
+        let mut result = 0;
+        for asteroid in self.asteroids {
+            if asteroid.is_active {
+                result += 1;
+            }
+        }
+        result
     }
 
     fn create_asteroid(&mut self, position: Vec2, radius: f32) -> Option<usize>
