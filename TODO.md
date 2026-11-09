@@ -28,7 +28,8 @@ This file contains the list of stuff there still is to do.
 - [ ] Add savedata
 
 ## Audio/Visual
-- [ ] Give asteroids more distinct looks
+- [x] Give asteroids more distinct looks
+- [ ] Add lighting to asteroids based upon player position
 - [ ] Add effect to asteroids being split/destroyed
 - [ ] Add background
 - [ ] Implement sound

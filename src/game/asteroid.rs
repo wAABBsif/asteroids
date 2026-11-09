@@ -1,4 +1,4 @@
-use std::f32::NAN;
+use std::f32::{NAN, consts::PI};
 
 use macroquad::{math::*, *};
 
@@ -19,16 +19,26 @@ const ASTEROIDS_WAVE_MIN: f32 = 2.0;
 const ASTEROIDS_WAVE_RATE: f32 = 1.0;
 const ASTEROIDS_WAVE_MAX: u64 = 11;
 
+const POINT_RADIUS_RATIO: f32 = 16.0;
+const POINT_RADIUS_MARGIN: f32 = 0.125;
 const COLOR: color::Color = color::GRAY;
 
+const MAX_POINT_COUNT: usize = (POINT_RADIUS_RATIO * SPAWN_RADIUS) as usize;
 const MAX_COUNT: usize = 48;
 
-#[derive(Copy, Clone)]
+#[derive(Clone, Copy)]
 pub struct Asteroid {
+    is_active: bool,
     pub position: Vec2,
     pub velocity: Vec2,
     pub radius: f32,
-    is_active: bool
+    shape: Shape,
+}
+
+#[derive(Clone, Copy)]
+struct Shape {
+    size: usize,
+    points: [Vec2; MAX_POINT_COUNT],
 }
 
 pub struct AsteroidManager {
@@ -40,10 +50,11 @@ pub struct AsteroidManager {
 impl Asteroid {
     pub fn new(position: Vec2, radius: f32, angle: f32, speed_factor: f32) -> Asteroid {
         Asteroid {
+            is_active: true,
             position: position,
             velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
             radius: radius,
-            is_active: true
+            shape: Shape::new(radius)
         }
     }
 
@@ -61,8 +72,15 @@ impl Asteroid {
             return;
         }
 
-        let point = crate::gfx::world_to_screen_offset(self.position);
-        shapes::draw_circle(point.x, point.y, self.radius * crate::gfx::pixels_per_unit(), COLOR);
+        for i in 0..self.shape.size {
+            let pos = crate::gfx::world_to_screen_offset(self.position);
+            let triangle_pts = [
+                pos,
+                pos + crate::gfx::world_to_screen(self.shape.points[i]),
+                pos + crate::gfx::world_to_screen(self.shape.points[(i + 1) % self.shape.size]),
+            ];
+            shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], COLOR);
+        }
     }
 
     pub fn is_point_inside(&self, point: Vec2) -> bool {
@@ -88,17 +106,36 @@ impl Wrap for Asteroid {
     }
 }
 
+impl Shape {
+    fn new(radius: f32) -> Shape {
+        let mut result = Shape {
+            size: (radius * POINT_RADIUS_RATIO) as usize,
+            points: [Vec2::NAN; MAX_POINT_COUNT]
+        };
+        for i in 0..result.size {
+            let angle = (i as f32) / (result.size as f32) * 2.0 * PI;
+            let dist = rand::RandomRange::gen_range(
+                radius - POINT_RADIUS_MARGIN, radius + POINT_RADIUS_MARGIN);
+            result.points[i] = Vec2::from_angle(angle) * dist;
+        }
+
+        result
+    }
+}
+
 impl AsteroidManager {
     pub fn new() -> AsteroidManager {
         AsteroidManager {
-            asteroids: [
-                Asteroid {
-                    position: Vec2::NAN,
-                    velocity: Vec2::NAN,
-                    radius: NAN,
-                    is_active: false
-                }; MAX_COUNT
-            ],
+            asteroids: [Asteroid {
+                is_active: false,
+                position: Vec2::NAN,
+                velocity: Vec2::NAN,
+                radius: NAN,
+                shape: Shape {
+                    size: 0,
+                    points: [Vec2::NAN; MAX_POINT_COUNT]
+                },
+            }; MAX_COUNT],
             head: 0,
             wave_count: 0
         }
@@ -114,7 +151,7 @@ impl AsteroidManager {
     }
 
     pub fn draw(&self) {
-        for a in self.asteroids {
+        for a in &self.asteroids {
             a.draw();
         }
     }
@@ -188,7 +225,7 @@ impl AsteroidManager {
 
     pub fn get_asteroid_count(&self) -> usize {
         let mut result = 0;
-        for asteroid in self.asteroids {
+        for asteroid in &self.asteroids {
             if asteroid.is_active {
                 result += 1;
             }
