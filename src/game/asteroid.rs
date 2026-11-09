@@ -2,7 +2,7 @@ use std::f32::{NAN, consts::PI};
 
 use macroquad::{math::*, *};
 
-use crate::game::{score::ScoreManager, wrap::Wrap};
+use crate::game::{player::{self, Player}, score::ScoreManager, wrap::Wrap};
 
 const SPAWN_RADIUS: f32 = 1.0;
 const DECREASE_RADIUS: f32 = 0.3;
@@ -21,7 +21,18 @@ const ASTEROIDS_WAVE_MAX: u64 = 11;
 
 const POINT_RADIUS_RATIO: f32 = 16.0;
 const POINT_RADIUS_MARGIN: f32 = 0.125;
-const COLOR: color::Color = color::GRAY;
+const BRIGHT_COLOR: color::Color = color::Color {
+    r: 0.4,
+    g: 0.4,
+    b: 0.5,
+    a: 1.0
+};
+const DARK_COLOR: color::Color = color::Color {
+    r: 0.2,
+    g: 0.2,
+    b: 0.3,
+    a: 1.0
+};
 
 const MAX_POINT_COUNT: usize = (POINT_RADIUS_RATIO * SPAWN_RADIUS) as usize;
 const MAX_COUNT: usize = 48;
@@ -67,19 +78,31 @@ impl Asteroid {
         self.handle_wrap();
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self, player: &Player) {
         if !self.is_active {
             return;
         }
 
         for i in 0..self.shape.size {
             let pos = crate::gfx::world_to_screen_offset(self.position);
+            let curr_point = self.shape.points[i];
+            let next_point = self.shape.points[(i + 1) % self.shape.size];
             let triangle_pts = [
                 pos,
-                pos + crate::gfx::world_to_screen(self.shape.points[i]),
-                pos + crate::gfx::world_to_screen(self.shape.points[(i + 1) % self.shape.size]),
+                pos + crate::gfx::world_to_screen(curr_point),
+                pos + crate::gfx::world_to_screen(next_point),
             ];
-            shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], COLOR);
+            let player_dir = (player.position - self.position).normalize();
+            let normal = (curr_point + next_point) * 0.5;
+            let lightness = (normal.dot(player_dir) + 1.0) * 0.5;
+            let color = macroquad::color::Color {
+                r: DARK_COLOR.r + (BRIGHT_COLOR.r - DARK_COLOR.r) * lightness,
+                g: DARK_COLOR.g + (BRIGHT_COLOR.g - DARK_COLOR.g) * lightness,
+                b: DARK_COLOR.b + (BRIGHT_COLOR.b - DARK_COLOR.b) * lightness,
+                a: 1.0
+            };
+            shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], color);
+
         }
     }
 
@@ -150,9 +173,9 @@ impl AsteroidManager {
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self, player: &Player) {
         for a in &self.asteroids {
-            a.draw();
+            a.draw(player);
         }
     }
 
