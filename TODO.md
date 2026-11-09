@@ -26,3 +26,13 @@ This file contains the list of stuff there still is to do.
 - [ ] Add main menu
 - [ ] Add options
 - [ ] Add savedata
+
+## Audio/Visual
+- [ ] Give asteroids more distinct looks
+- [ ] Add effect to asteroids being split/destroyed
+- [ ] Add background
+- [ ] Implement sound
+- [ ] Add ship noises
+- [ ] Add bullet noises
+- [ ] Add asteroid noises
+- [ ] Add miscellaneous/meta sound effects
