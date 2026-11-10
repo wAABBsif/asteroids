@@ -24,6 +24,7 @@ struct Trail {
 }
 
 pub struct Player {
+    pub is_active: bool,
     pub position: Vec2,
     pub velocity: Vec2,
     pub angle: f32,
@@ -35,6 +36,7 @@ pub struct Player {
 impl Player {
     pub fn new() -> Player {
         Player {
+            is_active: true,
             position: Vec2::ZERO,
             velocity: Vec2::ZERO,
             angle:  0.0,
@@ -49,12 +51,32 @@ impl Player {
     }
 
     pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager,
-        asteroid_manager: &mut AsteroidManager) {
+        asteroid_manager: &mut AsteroidManager)
+    {
+        if self.is_active {
+            self.handle_active(delta, bullet_manager, asteroid_manager);
+        } else {
+            self.handle_inactive(delta);
+        }
+    }
+
+    fn handle_active(&mut self, delta: f32, bullet_manager: &mut BulletManager,
+        asteroid_manager: &mut AsteroidManager)
+    {
         self.handle_rotation();
         self.handle_movement(delta);
         self.update_transform(delta);
         self.handle_shooting(bullet_manager);
         self.handle_collision(asteroid_manager);
+        self.update_trail(delta);
+    }
+
+    fn handle_inactive(&mut self, delta: f32) {
+        self.position = Vec2::ZERO;
+        self.velocity = Vec2::ZERO;
+        self.angle = 0.0;
+        self.angular_velocity = 0.0;
+        self.is_accelerating = false;
         self.update_trail(delta);
     }
 
@@ -93,13 +115,10 @@ impl Player {
         }
     }
 
-    fn handle_collision(&self, asteroid_manager: &mut AsteroidManager) {
+    fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager) {
         let colliding = asteroid_manager.get_asteroid_at_point(self.position);
         if colliding.is_some() {
-            let colliding = colliding.unwrap();
-            let colliding = asteroid_manager.get_asteroid(colliding).unwrap();
-            println!("Player collided with asteroid at {} with radius {}", 
-                colliding.position, colliding.radius);
+            self.is_active = false;
         }
     }
 
@@ -118,6 +137,10 @@ impl Player {
 
     pub fn draw(&self) {
         self.draw_trail();
+
+        if !self.is_active {
+            return;
+        }
 
         let points = [
             self.position + self.up_direction() * HEIGHT,
