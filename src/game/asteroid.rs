@@ -28,9 +28,9 @@ const BRIGHT_COLOR: color::Color = color::Color {
     a: 1.0
 };
 const DARK_COLOR: color::Color = color::Color {
-    r: 0.2,
-    g: 0.2,
-    b: 0.3,
+    r: 0.3,
+    g: 0.3,
+    b: 0.4,
     a: 1.0
 };
 
@@ -95,7 +95,11 @@ impl Asteroid {
             let player_dir = (player.position - self.position).normalize();
             let normal = (curr_point + next_point) * 0.5;
             let dist = player.position.distance(self.position);
-            let lightness = (normal.dot(player_dir) + 1.0) * 0.5 / dist.sqrt();
+            let lightness = if player.is_active {
+                (normal.dot(player_dir) + 1.0) * 0.5 / dist.sqrt()
+            } else {
+                0.0
+            };
             let color = macroquad::color::Color {
                 r: DARK_COLOR.r + (BRIGHT_COLOR.r - DARK_COLOR.r) * lightness,
                 g: DARK_COLOR.g + (BRIGHT_COLOR.g - DARK_COLOR.g) * lightness,
