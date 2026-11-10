@@ -70,7 +70,7 @@ async fn draw(state: &mut GameState) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn terminate(mut state: &GameState) -> Result<(), Box<dyn std::error::Error>> {
+fn terminate(mut _state: &GameState) -> Result<(), Box<dyn std::error::Error>> {
     println!("Terminated game");
 
     Ok(())

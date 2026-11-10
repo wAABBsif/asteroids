@@ -2,7 +2,7 @@ use std::f32::{NAN, consts::PI};
 
 use macroquad::{math::*, *};
 
-use crate::game::{player::{self, Player}, score::ScoreManager, wrap::Wrap};
+use crate::game::{player::Player, score::ScoreManager, wrap::Wrap};
 
 const SPAWN_RADIUS: f32 = 1.0;
 const DECREASE_RADIUS: f32 = 0.3;
@@ -225,14 +225,6 @@ impl AsteroidManager {
         self.create_asteroid(position, split_radius);
         self.create_asteroid(position, split_radius);
     }
-
-    pub fn get_asteroid(&mut self, id: usize) -> Option<&mut Asteroid> {
-        if !self.asteroids[id].is_active {
-            return None
-        }
-        Some(&mut self.asteroids[id])
-    }
-
 
     pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<usize> {
         for i in 0..self.asteroids.len() {

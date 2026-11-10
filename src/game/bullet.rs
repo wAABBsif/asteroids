@@ -127,13 +127,6 @@ impl BulletManager {
         Some(result)
     }
 
-    pub fn get_bullet(&mut self, id: usize) -> Option<&mut Bullet> {
-        if !self.bullets[id].is_active {
-            return None;
-        }
-        Some(&mut self.bullets[id])
-    }
-
     pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
         score_manager: &mut ScoreManager)
     {
