@@ -94,7 +94,8 @@ impl Asteroid {
             ];
             let player_dir = (player.position - self.position).normalize();
             let normal = (curr_point + next_point) * 0.5;
-            let lightness = (normal.dot(player_dir) + 1.0) * 0.5;
+            let dist = player.position.distance(self.position);
+            let lightness = (normal.dot(player_dir) + 1.0) * 0.5 / dist.sqrt();
             let color = macroquad::color::Color {
                 r: DARK_COLOR.r + (BRIGHT_COLOR.r - DARK_COLOR.r) * lightness,
                 g: DARK_COLOR.g + (BRIGHT_COLOR.g - DARK_COLOR.g) * lightness,
