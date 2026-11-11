@@ -20,6 +20,7 @@ const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
 const RESPAWN_TIME: f32 = 2.0;
+const INVINCIBILITY_TIME: f32 = 3.0;
 
 struct Trail {
     head: usize,
@@ -63,6 +64,7 @@ impl Player {
 
     pub fn respawn(&mut self) {
         *self = Player::new();
+        self.timer = INVINCIBILITY_TIME;
     }
 
     pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager,
@@ -78,6 +80,7 @@ impl Player {
     fn handle_active(&mut self, delta: f32, bullet_manager: &mut BulletManager,
         asteroid_manager: &mut AsteroidManager)
     {
+        self.timer -= delta;
         self.handle_rotation();
         self.handle_movement(delta);
         self.update_transform(delta);
@@ -134,7 +137,7 @@ impl Player {
 
     fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager) {
         let colliding = asteroid_manager.get_asteroid_at_point(self.position);
-        if colliding.is_some() {
+        if colliding.is_some() && self.timer <= 0.0 {
             self.kill();
         }
     }
