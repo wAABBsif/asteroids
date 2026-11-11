@@ -63,8 +63,8 @@ async fn update(state: &mut GameState, delta: f32) -> Result<(), Box<dyn std::er
 async fn draw(state: &mut GameState) -> Result<(), Box<dyn std::error::Error>> {
     macroquad::window::clear_background(macroquad::color::BLACK);
     state.bullet_manager.draw();
-    state.player.draw();
     state.asteroid_manager.draw(&state.player);
+    state.player.draw();
     state.hud.draw(&state.score_manager);
     macroquad::window::next_frame().await;
     Ok(())
