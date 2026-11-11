@@ -17,6 +17,8 @@ const ACCELERATION: f32 = 8.0;
 const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
+const RESPAWN_TIME: f32 = 2.0;
+
 struct Trail {
     head: usize,
     timer: f32,
@@ -30,6 +32,7 @@ pub struct Player {
     pub angle: f32,
     pub angular_velocity: f32,
     is_accelerating: bool,
+    timer: f32,
     trail: Trail
 }
 
@@ -42,12 +45,22 @@ impl Player {
             angle:  0.0,
             angular_velocity: 0.0,
             is_accelerating: false,
+            timer: 0.0,
             trail: Trail {
                 timer: 0.0,
                 head: 0,
                 pts: [Vec2::ZERO; TRAIL_LENGTH],
             },
         }
+    }
+
+    pub fn kill(&mut self) {
+        self.timer = RESPAWN_TIME;
+        self.is_active = false;
+    }
+
+    pub fn respawn(&mut self) {
+        *self = Player::new();
     }
 
     pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager,
@@ -72,6 +85,11 @@ impl Player {
     }
 
     fn handle_inactive(&mut self, delta: f32) {
+        self.timer -= delta;
+        if self.timer <= 0.0 {
+            self.respawn();
+            return;
+        }
         self.position = Vec2::ZERO;
         self.velocity = Vec2::ZERO;
         self.angle = 0.0;
@@ -118,7 +136,7 @@ impl Player {
     fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager) {
         let colliding = asteroid_manager.get_asteroid_at_point(self.position);
         if colliding.is_some() {
-            self.is_active = false;
+            self.kill();
         }
     }
 
