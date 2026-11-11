@@ -20,7 +20,8 @@ const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
 const RESPAWN_TIME: f32 = 2.0;
-const INVINCIBILITY_TIME: f32 = 3.0;
+const INVINCIBILITY_TIME: f32 = 1.0;
+const INVINCIBILITY_DISAPPEAR_TIME: f32 = 0.2;
 
 struct Trail {
     head: usize,
@@ -160,6 +161,12 @@ impl Player {
 
         if !self.is_active {
             return;
+        }
+
+        if self.timer >= 0.0 {
+            if self.timer % INVINCIBILITY_DISAPPEAR_TIME * 2.0 < INVINCIBILITY_DISAPPEAR_TIME {
+                return;
+            }
         }
 
         let points = [
