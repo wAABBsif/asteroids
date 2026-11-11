@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use macroquad::{math::*, *};
 
 use crate::game::{bullet::BulletManager, asteroid::AsteroidManager, wrap::Wrap};
@@ -42,7 +44,7 @@ impl Player {
             is_active: true,
             position: Vec2::ZERO,
             velocity: Vec2::ZERO,
-            angle:  0.0,
+            angle:  -PI / 2.0,
             angular_velocity: 0.0,
             is_accelerating: false,
             timer: 0.0,
@@ -91,9 +93,6 @@ impl Player {
             return;
         }
         self.position = Vec2::ZERO;
-        self.velocity = Vec2::ZERO;
-        self.angle = 0.0;
-        self.angular_velocity = 0.0;
         self.is_accelerating = false;
         self.update_trail(delta);
     }
