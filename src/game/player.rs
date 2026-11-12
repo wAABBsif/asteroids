@@ -19,6 +19,7 @@ const ACCELERATION: f32 = 8.0;
 const TURN_SPEED: f32 = 6.0;
 const DRAG: f32 = 0.8;
 
+const INITIAL_LIVES: u16 = 3;
 const RESPAWN_TIME: f32 = 2.0;
 const INVINCIBILITY_TIME: f32 = 1.0;
 const INVINCIBILITY_DISAPPEAR_TIME: f32 = 0.2;
@@ -31,6 +32,7 @@ struct Trail {
 
 pub struct Player {
     pub is_active: bool,
+    pub lives: u16,
     pub position: Vec2,
     pub velocity: Vec2,
     pub angle: f32,
@@ -44,6 +46,7 @@ impl Player {
     pub fn new() -> Player {
         Player {
             is_active: true,
+            lives: INITIAL_LIVES,
             position: Vec2::ZERO,
             velocity: Vec2::ZERO,
             angle:  -PI / 2.0,
@@ -64,8 +67,11 @@ impl Player {
     }
 
     pub fn respawn(&mut self) {
+        let lives = self.lives - 1;
         *self = Player::new();
         self.timer = INVINCIBILITY_TIME;
+        self.lives = lives;
+        println!("Lives: {lives}");
     }
 
     pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager,
@@ -92,7 +98,7 @@ impl Player {
 
     fn handle_inactive(&mut self, delta: f32) {
         self.timer -= delta;
-        if self.timer <= 0.0 {
+        if self.timer <= 0.0 && self.lives > 0 {
             self.respawn();
             return;
         }
