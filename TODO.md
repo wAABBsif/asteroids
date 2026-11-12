@@ -18,7 +18,7 @@ This file contains the list of stuff there still is to do.
 - [x] Implement asteroid spawning
 - [x] Implement asteroid waves
 - [x] Implement lives system
-- [ ] Implement lives UI
+- [x] Implement lives UI
 
 ## Meta
 - [ ] Add pausing

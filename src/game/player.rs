@@ -175,18 +175,35 @@ impl Player {
             }
         }
 
+        Player::draw_player(self.position, self.angle, 1.0, true);
+    }
+
+    pub fn draw_player(position: Vec2, angle: f32, scale: f32, offset: bool) {
+        let right = vec2(0.0, -1.0).rotate(Vec2::from_angle(angle));
+        let up = vec2(1.0, 0.0).rotate(Vec2::from_angle(angle));
+        let height = HEIGHT * scale;
+        let width = WIDTH * scale;
         let points = [
-            self.position + self.up_direction() * HEIGHT,
-            self.position - self.up_direction() * HEIGHT + self.right_direction() * WIDTH,
-            self.position - self.up_direction() * HEIGHT - self.right_direction() * WIDTH,
+            position + up * height,
+            position - up * height + right * width,
+            position - up * height - right * width,
         ];
 
-        shapes::draw_triangle(
-            crate::gfx::world_to_screen_offset(points[0]),
-            crate::gfx::world_to_screen_offset(points[1]),
-            crate::gfx::world_to_screen_offset(points[2]),
-            COLOR
-        );
+        if offset {
+            shapes::draw_triangle(
+                crate::gfx::world_to_screen_offset(points[0]),
+                crate::gfx::world_to_screen_offset(points[1]),
+                crate::gfx::world_to_screen_offset(points[2]),
+                COLOR
+            );
+        } else {
+            shapes::draw_triangle(
+                crate::gfx::world_to_screen(points[0]),
+                crate::gfx::world_to_screen(points[1]),
+                crate::gfx::world_to_screen(points[2]),
+                COLOR
+            );
+        }
     }
 
     fn draw_trail(&self) {

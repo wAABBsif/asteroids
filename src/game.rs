@@ -65,7 +65,7 @@ async fn draw(state: &mut GameState) -> Result<(), Box<dyn std::error::Error>> {
     state.bullet_manager.draw();
     state.asteroid_manager.draw(&state.player);
     state.player.draw();
-    state.hud.draw(&state.score_manager);
+    state.hud.draw(&state.score_manager, &state.player);
     macroquad::window::next_frame().await;
     Ok(())
 }
