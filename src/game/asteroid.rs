@@ -37,6 +37,13 @@ const DARK_COLOR: color::Color = color::Color {
 const MAX_POINT_COUNT: usize = (POINT_RADIUS_RATIO * SPAWN_RADIUS) as usize;
 const MAX_COUNT: usize = 48;
 
+const PARTICLE_SHAPE_RAND_FACTOR: f32 = 2.0;
+const PARTICLE_RADIUS: f32 = 0.05;
+const PARTICLE_MIN_SPEED: f32 = 2.0;
+const PARTICLE_MAX_SPEED: f32 = 8.0;
+const MAX_PARTICLE_COUNT: usize = 512;
+const PARTICLE_RADIUS_RATIO: f32 = 64.0;
+
 #[derive(Clone, Copy)]
 pub struct Asteroid {
     is_active: bool,
@@ -47,13 +54,23 @@ pub struct Asteroid {
 }
 
 #[derive(Clone, Copy)]
+struct Particle {
+    is_active: bool,
+    position: Vec2,
+    velocity: Vec2,
+    shape: Polygon<3>
+}
+
+#[derive(Clone, Copy)]
 struct Polygon<const C: usize> {
     points: [Vec2; C],
 }
 
 pub struct AsteroidManager {
     asteroids: [Asteroid; MAX_COUNT],
-    head: usize,
+    particles: [Particle; MAX_PARTICLE_COUNT],
+    asteroid_head: usize,
+    particle_head: usize,
     wave_count: u64,
 }
 
@@ -126,6 +143,46 @@ impl EdgeBehavior for Asteroid {
     }
 }
 
+impl Particle {
+    pub fn new(position: Vec2, angle: f32, speed: f32) -> Particle {
+        Particle {
+            is_active: true,
+            position: position,
+            velocity: Vec2::from_angle(angle) * speed,
+            shape: Polygon::new(3, PARTICLE_SHAPE_RAND_FACTOR),
+        }
+    }
+
+    pub fn update(&mut self, delta: f32) {
+        if !self.is_active {
+            return;
+        }
+
+        self.position += self.velocity * delta;
+        screen::handle_edge_behavior(self, self.position, PARTICLE_RADIUS * PARTICLE_SHAPE_RAND_FACTOR);
+    }
+
+    pub fn draw(&self) {
+        if !self.is_active {
+            return;
+        }
+
+        let pos = screen::world_to_screen_offset(self.position);
+        let triangle_pts = [
+            pos + screen::world_to_screen(self.shape.points[0]) * PARTICLE_RADIUS,
+            pos + screen::world_to_screen(self.shape.points[1]) * PARTICLE_RADIUS,
+            pos + screen::world_to_screen(self.shape.points[2]) * PARTICLE_RADIUS,
+        ];
+        shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], DARK_COLOR);
+    }
+}
+
+impl EdgeBehavior for Particle {
+    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+        self.is_active = false;
+    }
+}
+
 impl<const C: usize> Polygon<C> {
     fn new(count: usize, rand_factor: f32) -> Polygon<C> {
         let mut result = Polygon {
@@ -153,7 +210,16 @@ impl AsteroidManager {
                     points: [Vec2::NAN; MAX_POINT_COUNT]
                 },
             }; MAX_COUNT],
-            head: 0,
+            particles: [Particle {
+                is_active: false,
+                position: Vec2::NAN,
+                velocity: Vec2::NAN,
+                shape: Polygon {
+                    points: [Vec2::NAN; 3]
+                }
+            }; MAX_PARTICLE_COUNT],
+            asteroid_head: 0,
+            particle_head: 0,
             wave_count: 0
         }
     }
@@ -165,11 +231,17 @@ impl AsteroidManager {
         for a in &mut self.asteroids {
             a.update(delta);
         }
+        for p in &mut self.particles {
+            p.update(delta);
+        }
     }
 
     pub fn draw(&self, player: &Player) {
         for a in &self.asteroids {
             a.draw(player);
+        }
+        for p in &self.particles {
+            p.draw();
         }
     }
 
@@ -211,13 +283,17 @@ impl AsteroidManager {
         score_manager.score += score_manager.combo as u64 * SCORE_COMBO_FACTOR;
         score_manager.increase_combo();
         asteroid.is_active = false;
-        if asteroid.radius <= MIN_RADIUS {
+        let position = asteroid.position;
+        let radius = asteroid.radius;
+        for _i in 0..(asteroid.radius * PARTICLE_RADIUS_RATIO) as usize {
+            self.create_particle(position, radius);
+        }
+        if radius <= MIN_RADIUS {
             return;
         }
-        let split_radius = asteroid.radius - DECREASE_RADIUS;
-        let position = asteroid.position;
-        self.create_asteroid(position, split_radius);
-        self.create_asteroid(position, split_radius);
+        let radius = radius - DECREASE_RADIUS;
+        self.create_asteroid(position, radius);
+        self.create_asteroid(position, radius);
     }
 
     pub fn get_asteroid_at_point(&mut self, point: Vec2) -> Option<usize> {
@@ -244,15 +320,32 @@ impl AsteroidManager {
 
     fn create_asteroid(&mut self, position: Vec2, radius: f32) -> Option<usize>
     {
-        if self.asteroids[self.head].is_active {
+        if self.asteroids[self.asteroid_head].is_active {
             return None
         }
 
         let angle = rand::RandomRange::gen_range(-std::f32::consts::PI, std::f32::consts::PI);
         let speed_factor = rand::RandomRange::gen_range(MIN_SPEED_FACTOR, 1.0);
-        self.asteroids[self.head] = Asteroid::new(position, radius, angle, speed_factor);
-        let result = self.head;
-        self.head = (self.head + 1) % MAX_COUNT;
+        self.asteroids[self.asteroid_head] = Asteroid::new(position, radius, angle, speed_factor);
+        let result = self.asteroid_head;
+        self.asteroid_head = (self.asteroid_head + 1) % MAX_COUNT;
+        Some(result)
+    }
+
+    fn create_particle(&mut self, asteroid_position: Vec2, asteroid_radius: f32) -> Option<usize> {
+        if self.particles[self.particle_head].is_active {
+            return None
+        }
+
+        let pos_radius = rand::RandomRange::gen_range(0.0, asteroid_radius);
+        let pos_angle = rand::RandomRange::gen_range(0.0, 2.0 * PI);
+        let vel_angle = rand::RandomRange::gen_range(0.0, 2.0 * PI);
+        let speed = rand::RandomRange::gen_range(PARTICLE_MIN_SPEED, PARTICLE_MAX_SPEED);
+
+        let pos = asteroid_position + Vec2::from_angle(pos_angle) * pos_radius;
+        self.particles[self.particle_head] = Particle::new(pos, vel_angle, speed);
+        let result = self.particle_head;
+        self.particle_head = (self.particle_head + 1) % MAX_PARTICLE_COUNT;
         Some(result)
     }
 }
