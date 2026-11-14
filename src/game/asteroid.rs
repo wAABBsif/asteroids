@@ -2,7 +2,7 @@ use std::f32::{NAN, consts::PI};
 
 use macroquad::{math::*, *};
 
-use crate::game::{player::Player, score::ScoreManager, wrap::Wrap};
+use crate::game::{player::Player, score::ScoreManager, screen::{self, EdgeBehavior}};
 
 const SPAWN_RADIUS: f32 = 1.0;
 const DECREASE_RADIUS: f32 = 0.3;
@@ -74,7 +74,7 @@ impl Asteroid {
         }
 
         self.position += self.velocity * delta;
-        self.handle_wrap();
+        screen::handle_edge_behavior(self, self.position, self.radius);
     }
 
     pub fn draw(&self, player: &Player) {
@@ -84,13 +84,13 @@ impl Asteroid {
 
         let pt_count = (self.radius * POINT_RADIUS_RATIO) as usize;
         for i in 0..pt_count {
-            let pos = crate::gfx::world_to_screen_offset(self.position);
+            let pos = screen::world_to_screen_offset(self.position);
             let curr_point = self.shape.points[i];
             let next_point = self.shape.points[(i + 1) % pt_count];
             let triangle_pts = [
                 pos,
-                pos + crate::gfx::world_to_screen(curr_point) * self.radius,
-                pos + crate::gfx::world_to_screen(next_point) * self.radius,
+                pos + screen::world_to_screen(curr_point) * self.radius,
+                pos + screen::world_to_screen(next_point) * self.radius,
             ];
             let player_dir = (player.position - self.position).normalize();
             let normal = (curr_point + next_point) * 0.5;
@@ -120,17 +120,9 @@ impl Asteroid {
     }
 }
 
-impl Wrap for Asteroid {
-    fn get_wrap_position(&self) -> Vec2 {
-        return self.position;
-    }
-
-    fn set_wrap_position(&mut self, value: Vec2) {
-        self.position = value;
-    }
-
-    fn get_size(&self) -> f32 {
-        return self.radius;
+impl EdgeBehavior for Asteroid {
+    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+        screen::screen_wrap(axis, &mut self.position, self.radius);
     }
 }
 
@@ -191,22 +183,22 @@ impl AsteroidManager {
     }
 
     pub fn spawn_asteroid(&mut self) -> Option<usize> {
-        let perimeter = (crate::gfx::world_size().x + crate::gfx::world_size().y) * 2.0;
+        let perimeter = (screen::world_size().x + screen::world_size().y) * 2.0;
         let perimeter_point = rand::gen_range(0.0, perimeter);
         let position: Vec2;
-        if perimeter_point < crate::gfx::world_size().x {
-            let perimeter_point = perimeter_point - crate::gfx::world_size().x * 0.5;
+        if perimeter_point < screen::world_size().x {
+            let perimeter_point = perimeter_point - screen::world_size().x * 0.5;
             position = vec2(perimeter_point, f32::INFINITY);
-        } else if perimeter_point < crate::gfx::world_size().x + crate::gfx::world_size().y {
-            let perimeter_point = perimeter_point - crate::gfx::world_size().x * 1.5;
+        } else if perimeter_point < screen::world_size().x + screen::world_size().y {
+            let perimeter_point = perimeter_point - screen::world_size().x * 1.5;
             position = vec2(f32::INFINITY, perimeter_point);
-        } else if perimeter_point < perimeter - crate::gfx::world_size().y {
+        } else if perimeter_point < perimeter - screen::world_size().y {
             let perimeter_point =
-                perimeter_point - crate::gfx::world_size().x * 1.5 - crate::gfx::world_size().y;
+                perimeter_point - screen::world_size().x * 1.5 - screen::world_size().y;
             position = vec2(perimeter_point, f32::NEG_INFINITY);
         } else {
             let perimeter_point = perimeter_point
-                - crate::gfx::world_size().x * 2.0 - crate::gfx::world_size().y * 1.5;
+                - screen::world_size().x * 2.0 - screen::world_size().y * 1.5;
             position = vec2(f32::NEG_INFINITY, perimeter_point);
         }
 

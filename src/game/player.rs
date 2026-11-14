@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use macroquad::{math::*, *};
 
-use crate::game::{bullet::BulletManager, asteroid::AsteroidManager, wrap::Wrap};
+use crate::game::{asteroid::AsteroidManager, bullet::BulletManager, screen::{self, EdgeBehavior}};
 
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
@@ -130,7 +130,7 @@ impl Player {
     fn update_transform(&mut self, delta: f32) {
         self.position += self.velocity * delta;
         self.angle += self.angular_velocity * delta;
-        self.handle_wrap();
+        screen::handle_edge_behavior(self, self.position, HEIGHT.max(WIDTH));
     }
 
     fn handle_shooting(&self, bullet_manager: &mut BulletManager) {
@@ -191,16 +191,16 @@ impl Player {
 
         if offset {
             shapes::draw_triangle(
-                crate::gfx::world_to_screen_offset(points[0]),
-                crate::gfx::world_to_screen_offset(points[1]),
-                crate::gfx::world_to_screen_offset(points[2]),
+                screen::world_to_screen_offset(points[0]),
+                screen::world_to_screen_offset(points[1]),
+                screen::world_to_screen_offset(points[2]),
                 COLOR
             );
         } else {
             shapes::draw_triangle(
-                crate::gfx::world_to_screen(points[0]),
-                crate::gfx::world_to_screen(points[1]),
-                crate::gfx::world_to_screen(points[2]),
+                screen::world_to_screen(points[0]),
+                screen::world_to_screen(points[1]),
+                screen::world_to_screen(points[2]),
                 COLOR
             );
         }
@@ -213,10 +213,10 @@ impl Player {
             } else {
                 TRAIL_LENGTH + self.trail.head - i
             };
-            let point = crate::gfx::world_to_screen_offset(self.trail.pts[trail_idx]);
+            let point = screen::world_to_screen_offset(self.trail.pts[trail_idx]);
             let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
             let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
-            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * crate::gfx::pixels_per_unit();
+            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * screen::pixels_per_unit();
 
             shapes::draw_circle(point.x, point.y, radius, color);
         }
@@ -231,16 +231,8 @@ impl Player {
     }
 }
 
-impl Wrap for Player {
-    fn get_wrap_position(&self) -> Vec2 {
-        return self.position;
-    }
-
-    fn set_wrap_position(&mut self, value: Vec2) {
-        self.position = value;
-    }
-
-    fn get_size(&self) -> f32 {
-        return HEIGHT.max(WIDTH);
+impl EdgeBehavior for Player {
+    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+        screen::screen_wrap(axis, &mut self.position, HEIGHT.max(WIDTH));
     }
 }

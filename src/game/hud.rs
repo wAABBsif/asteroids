@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use macroquad::math::*;
 
-use crate::game::{player::Player, score::ScoreManager};
+use crate::game::{player::Player, score::ScoreManager, screen};
 
 const FONT_SIZE: f32 = 0.75;
 const FONT_COLOR: macroquad::color::Color = macroquad::color::WHITE;
@@ -30,13 +30,13 @@ impl HUD {
         if !self.is_visible {
             return;
         }
-        let size = crate::gfx::pixels_per_unit() * FONT_SIZE;
+        let size = screen::pixels_per_unit() * FONT_SIZE;
 
-        let point = crate::gfx::world_to_screen(SCORE_TEXT_POSITION);
+        let point = screen::world_to_screen(SCORE_TEXT_POSITION);
         let text = format!("SCORE {}", score_manager.score);
         macroquad::text::draw_text(&text, point.x, point.y, size, FONT_COLOR);
 
-        let point = crate::gfx::world_to_screen(COMBO_TEXT_POSITION);
+        let point = screen::world_to_screen(COMBO_TEXT_POSITION);
         let text = format!("     x{}", score_manager.combo);
         let color = FONT_COLOR.with_alpha(score_manager.get_combo_timer_frac().powf(
                 FONT_ALPHA_EXP));
@@ -44,7 +44,7 @@ impl HUD {
         macroquad::text::draw_text(&text, point.x, point.y, size, color);
 
         for i in 0..player.lives {
-            let btm = crate::gfx::world_size().y;
+            let btm = screen::world_size().y;
             let position = vec2(LIVES_POSITION.x + i as f32 * LIVES_GAP, btm - LIVES_POSITION.y);
             Player::draw_player(position, PI / -2.0, LIVES_SCALE, false);
         }

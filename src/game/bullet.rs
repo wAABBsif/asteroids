@@ -1,7 +1,7 @@
 use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
-use crate::game::{asteroid::AsteroidManager, score::ScoreManager, wrap::Wrap};
+use crate::game::{asteroid::AsteroidManager, score::ScoreManager, screen::{self, EdgeBehavior}};
 
 const RADIUS: f32 = 0.05;
 const LENGTH: f32 = 0.35;
@@ -44,7 +44,7 @@ impl Bullet {
         }
 
         self.position += self.velocity * delta;
-        self.handle_wrap();
+        screen::handle_edge_behavior(self, self.position, RADIUS);
         self.handle_collision(asteroid_manager, score_manager);
 
         self.time_left -= delta; 
@@ -72,15 +72,15 @@ impl Bullet {
         let alpha = clamp(self.time_left / (LIFETIME - FADE_START_TIME), 0.0, 1.0);
         let color = COLOR.with_alpha(alpha);
 
-        let point = crate::gfx::world_to_screen_offset(self.position);
+        let point = screen::world_to_screen_offset(self.position);
         let vertices = [
-            crate::gfx::world_to_screen_offset(self.position + self.right_direction() * RADIUS),
-            crate::gfx::world_to_screen_offset(self.position - self.right_direction() * RADIUS),
-            crate::gfx::world_to_screen_offset(self.position - self.velocity.normalize() * LENGTH)
+            screen::world_to_screen_offset(self.position + self.right_direction() * RADIUS),
+            screen::world_to_screen_offset(self.position - self.right_direction() * RADIUS),
+            screen::world_to_screen_offset(self.position - self.velocity.normalize() * LENGTH)
         ];
 
         shapes::draw_triangle(vertices[0], vertices[1], vertices[2], color);
-        shapes::draw_circle(point.x, point.y, RADIUS * crate::gfx::pixels_per_unit(), color);
+        shapes::draw_circle(point.x, point.y, RADIUS * screen::pixels_per_unit(), color);
     }
 
     pub fn right_direction(&self) -> Vec2 {
@@ -88,17 +88,9 @@ impl Bullet {
     }
 }
 
-impl Wrap for Bullet {
-    fn get_wrap_position(&self) -> Vec2 {
-        return self.position;
-    }
-
-    fn set_wrap_position(&mut self, value: Vec2) {
-        self.position = value;
-    }
-
-    fn get_size(&self) -> f32 {
-        return RADIUS + LENGTH;
+impl EdgeBehavior for Bullet {
+    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+        screen::screen_wrap(axis, &mut self.position, RADIUS);
     }
 }
 

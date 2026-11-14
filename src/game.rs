@@ -1,7 +1,7 @@
 mod player;
 mod bullet;
 mod asteroid;
-mod wrap;
+mod screen;
 mod score;
 mod hud;
 
