@@ -20,7 +20,7 @@ const ASTEROIDS_WAVE_RATE: f32 = 1.0;
 const ASTEROIDS_WAVE_MAX: u64 = 11;
 
 const POINT_RADIUS_RATIO: f32 = 16.0;
-const POINT_RADIUS_MARGIN: f32 = 0.125;
+const SHAPE_RAND_FACTOR: f32 = 0.125;
 const BRIGHT_COLOR: color::Color = color::Color {
     r: 0.4,
     g: 0.4,
@@ -43,13 +43,12 @@ pub struct Asteroid {
     pub position: Vec2,
     pub velocity: Vec2,
     pub radius: f32,
-    shape: Shape,
+    shape: Polygon<MAX_POINT_COUNT>,
 }
 
 #[derive(Clone, Copy)]
-struct Shape {
-    size: usize,
-    points: [Vec2; MAX_POINT_COUNT],
+struct Polygon<const C: usize> {
+    points: [Vec2; C],
 }
 
 pub struct AsteroidManager {
@@ -65,7 +64,7 @@ impl Asteroid {
             position: position,
             velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
             radius: radius,
-            shape: Shape::new(radius)
+            shape: Polygon::new((radius * POINT_RADIUS_RATIO) as usize, SHAPE_RAND_FACTOR / radius)
         }
     }
 
@@ -83,14 +82,15 @@ impl Asteroid {
             return;
         }
 
-        for i in 0..self.shape.size {
+        let pt_count = (self.radius * POINT_RADIUS_RATIO) as usize;
+        for i in 0..pt_count {
             let pos = crate::gfx::world_to_screen_offset(self.position);
             let curr_point = self.shape.points[i];
-            let next_point = self.shape.points[(i + 1) % self.shape.size];
+            let next_point = self.shape.points[(i + 1) % pt_count];
             let triangle_pts = [
                 pos,
-                pos + crate::gfx::world_to_screen(curr_point),
-                pos + crate::gfx::world_to_screen(next_point),
+                pos + crate::gfx::world_to_screen(curr_point) * self.radius,
+                pos + crate::gfx::world_to_screen(next_point) * self.radius,
             ];
             let player_dir = (player.position - self.position).normalize();
             let normal = (curr_point + next_point) * 0.5;
@@ -134,16 +134,14 @@ impl Wrap for Asteroid {
     }
 }
 
-impl Shape {
-    fn new(radius: f32) -> Shape {
-        let mut result = Shape {
-            size: (radius * POINT_RADIUS_RATIO) as usize,
-            points: [Vec2::NAN; MAX_POINT_COUNT]
+impl<const C: usize> Polygon<C> {
+    fn new(count: usize, rand_factor: f32) -> Polygon<C> {
+        let mut result = Polygon {
+            points: [Vec2::NAN; C]
         };
-        for i in 0..result.size {
-            let angle = (i as f32) / (result.size as f32) * 2.0 * PI;
-            let dist = rand::RandomRange::gen_range(
-                radius - POINT_RADIUS_MARGIN, radius + POINT_RADIUS_MARGIN);
+        for i in 0..count {
+            let angle = (i as f32) / (count as f32) * 2.0 * PI;
+            let dist = 1.0 + rand::RandomRange::gen_range(-rand_factor, rand_factor);
             result.points[i] = Vec2::from_angle(angle) * dist;
         }
 
@@ -159,8 +157,7 @@ impl AsteroidManager {
                 position: Vec2::NAN,
                 velocity: Vec2::NAN,
                 radius: NAN,
-                shape: Shape {
-                    size: 0,
+                shape: Polygon {
                     points: [Vec2::NAN; MAX_POINT_COUNT]
                 },
             }; MAX_COUNT],
