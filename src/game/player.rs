@@ -71,7 +71,6 @@ impl Player {
         *self = Player::new();
         self.timer = INVINCIBILITY_TIME;
         self.lives = lives;
-        println!("Lives: {lives}");
     }
 
     pub fn update(&mut self, delta: f32, bullet_manager: &mut BulletManager,
