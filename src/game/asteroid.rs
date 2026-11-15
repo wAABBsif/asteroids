@@ -42,8 +42,8 @@ const PARTICLE_SHAPE_RAND_FACTOR: f32 = 2.0;
 const PARTICLE_RADIUS: f32 = 0.05;
 const PARTICLE_MIN_SPEED: f32 = 2.0;
 const PARTICLE_MAX_SPEED: f32 = 8.0;
-const MAX_PARTICLE_COUNT: usize = 256;
-const PARTICLE_RADIUS_RATIO: f32 = 64.0;
+const MAX_PARTICLE_COUNT: usize = 512;
+const PARTICLE_RADIUS_SQRT_RATIO: f32 = 128.0;
 
 pub struct AsteroidManager {
     asteroids: SwapArray<Asteroid, MAX_COUNT>,
@@ -123,7 +123,8 @@ impl AsteroidManager {
         asteroid.queue_removal = true;
         let position = asteroid.position;
         let radius = asteroid.radius;
-        for _i in 0..(asteroid.radius * PARTICLE_RADIUS_RATIO) as usize {
+        for _i in 0..(asteroid.radius.powi(2) * PARTICLE_RADIUS_SQRT_RATIO) as usize
+        {
             self.create_particle(position, radius);
         }
         if radius <= MIN_RADIUS {
