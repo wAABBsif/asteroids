@@ -1,7 +1,7 @@
 use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
-use crate::swap_array::SwapArray;
+use crate::collections::SwapArray;
 use crate::game::{asteroid::AsteroidManager, score::ScoreManager, screen::{self, EdgeBehavior}};
 
 const RADIUS: f32 = 0.05;

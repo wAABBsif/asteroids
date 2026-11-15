@@ -1,2 +1,2 @@
 pub mod game;
-pub mod swap_array;
+pub mod collections;

@@ -3,7 +3,7 @@ use std::f32::{NAN, consts::PI};
 use macroquad::{math::*, *};
 
 use crate::{game::{player::Player, score::ScoreManager, screen::{self, EdgeBehavior}}};
-use crate::swap_array::SwapArray;
+use crate::collections::SwapArray;
 
 const SPAWN_RADIUS: f32 = 1.0;
 const DECREASE_RADIUS: f32 = 0.3;
