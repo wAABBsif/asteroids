@@ -195,16 +195,8 @@ impl Asteroid {
     pub fn draw(&self, player: &Player) {
         let pt_count = (self.radius * POINT_RADIUS_RATIO) as usize;
         for i in 0..pt_count {
-            let pos = screen::world_to_screen_offset(self.position);
-            let curr_point = self.shape.points[i];
-            let next_point = self.shape.points[(i + 1) % pt_count];
-            let triangle_pts = [
-                pos,
-                pos + screen::world_to_screen(curr_point) * self.radius,
-                pos + screen::world_to_screen(next_point) * self.radius,
-            ];
             let player_dir = (player.position - self.position).normalize();
-            let normal = (curr_point + next_point) * 0.5;
+            let normal = Vec2::from_angle((i as f32) / (pt_count as f32) * 2.0 * PI);
             let dist = player.position.distance(self.position);
             let lightness = if player.is_active {
                 (normal.dot(player_dir) + 1.0) * 0.5 / dist.sqrt()
@@ -217,8 +209,7 @@ impl Asteroid {
                 b: DARK_COLOR.b + (BRIGHT_COLOR.b - DARK_COLOR.b) * lightness,
                 a: 1.0
             };
-            shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], color);
-
+            self.shape.draw_triangle(self.position, self.radius, pt_count, i, color);
         }
     }
 
@@ -241,7 +232,7 @@ impl EdgeBehavior for Asteroid {
 struct Particle {
     position: Vec2,
     velocity: Vec2,
-    shape: Polygon<3>
+    shape: Polygon<2>
 }
 
 impl Particle {
@@ -249,7 +240,7 @@ impl Particle {
         Particle {
             position: position,
             velocity: Vec2::from_angle(angle) * speed,
-            shape: Polygon::new(3, PARTICLE_SHAPE_RAND_FACTOR),
+            shape: Polygon::new(2, PARTICLE_SHAPE_RAND_FACTOR),
         }
     }
 
@@ -259,13 +250,7 @@ impl Particle {
     }
 
     pub fn draw(&self) {
-        let pos = screen::world_to_screen_offset(self.position);
-        let triangle_pts = [
-            pos + screen::world_to_screen(self.shape.points[0]) * PARTICLE_RADIUS,
-            pos + screen::world_to_screen(self.shape.points[1]) * PARTICLE_RADIUS,
-            pos + screen::world_to_screen(self.shape.points[2]) * PARTICLE_RADIUS,
-        ];
-        shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], DARK_COLOR);
+        self.shape.draw_triangle(self.position, PARTICLE_RADIUS, 3, 0, DARK_COLOR);
     }
 }
 
@@ -278,28 +263,46 @@ impl EdgeBehavior for Particle {
 
 #[derive(Clone, Copy)]
 struct Polygon<const C: usize> {
-    points: [Vec2; C],
+    radii: [f32; C],
 }
 
 impl<const C: usize> Polygon<C> {
     fn new(count: usize, rand_factor: f32) -> Polygon<C> {
         let mut result = Polygon {
-            points: [Vec2::NAN; C]
+            radii: [0.0; C]
         };
-        for i in 0..count {
-            let angle = (i as f32) / (count as f32) * 2.0 * PI;
-            let dist = 1.0 + rand::RandomRange::gen_range(-rand_factor, rand_factor);
-            result.points[i] = Vec2::from_angle(angle) * dist;
+        for radius in &mut result.radii[0..count] {
+            *radius = 1.0 + rand::RandomRange::gen_range(-rand_factor, rand_factor);
         }
 
         result
+    }
+
+    fn draw_triangle(&self, position: Vec2, radius: f32, count: usize, index: usize, 
+        color: macroquad::color::Color)
+    {
+        let pos = screen::world_to_screen_offset(position);
+        let angles = [
+            (index as f32) / (count as f32) * 2.0 * PI,
+            ((index + 1) as f32) / (count as f32) * 2.0 * PI
+        ];
+        let radii = [
+            self.radii[index] * radius * screen::pixels_per_unit(),
+            self.radii[(index + 1) % count] * radius * screen::pixels_per_unit()
+        ];
+        let triangle_pts = [
+            pos,
+            pos + Vec2::from_angle(angles[0]) * radii[0],
+            pos + Vec2::from_angle(angles[1]) * radii[1]
+        ];
+        shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], color);
     }
 }
 
 impl<const C: usize> Default for Polygon<C> {
     fn default() -> Self {
         Self {
-            points: [Vec2::default(); C]
+            radii: [0.0; C]
         }
     }
 }
