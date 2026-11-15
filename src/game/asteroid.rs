@@ -255,7 +255,7 @@ impl Particle {
 }
 
 impl EdgeBehavior for Particle {
-    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+    fn on_hit_screen_edge(&mut self, _axis: screen::Axis) {
         self.position = Vec2::NAN;
     }
 }

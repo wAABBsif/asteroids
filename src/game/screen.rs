@@ -27,16 +27,8 @@ pub fn world_to_screen(world_coords: Vec2) -> Vec2 {
     world_coords / world_size() * screen_size()
 }
 
-pub fn screen_to_world(screen_coords: Vec2) -> Vec2 {
-    screen_coords / screen_size() * world_size()
-}
-
 pub fn world_to_screen_offset(world_coords: Vec2) -> Vec2 {
     world_to_screen(world_coords) + screen_size() / vec2(2.0, 2.0)
-}
-
-pub fn screen_to_world_offset(screen_coords: Vec2) -> Vec2 {
-    screen_to_world(screen_coords) - world_size() / vec2(2.0, 2.0)
 }
 
 pub enum Axis {
