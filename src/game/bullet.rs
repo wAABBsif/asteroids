@@ -35,17 +35,16 @@ impl BulletManager {
     pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
         score_manager: &mut ScoreManager)
     {
-        for i in 0..self.bullets.size() {
-            if self.bullets[i].queue_removal {
-                self.bullets.remove(i);
-            }
-            self.bullets[i].update(delta, asteroid_manager, score_manager);
+        for b in &mut self.bullets {
+            b.update(delta, asteroid_manager, score_manager);
         }
+
+        self.bullets.retain(|&b| !b.queue_removal);
     }
 
     pub fn draw(&self) {
-        for i in 0..self.bullets.size() {
-            self.bullets[i].draw();
+        for b in &self.bullets {
+            b.draw();
         }
     }
 }

@@ -61,29 +61,25 @@ impl AsteroidManager {
     }
 
     pub fn update(&mut self, delta: f32) {
+        for a in &mut self.asteroids {
+            a.update(delta);
+        }
+        for p in &mut self.particles {
+            p.update(delta);
+        }
+        self.asteroids.retain(|&a| !a.queue_removal);
+        self.particles.retain(|&p| !p.queue_removal);
         if self.asteroids.size() == 0 {
             self.initialize_wave();
-        }
-        for i in 0..self.asteroids.size() {
-            if self.asteroids[i].queue_removal {
-                self.asteroids.remove(i);
-            }
-            self.asteroids[i].update(delta);
-        }
-        for i in 0..self.particles.size() {
-            if self.particles[i].queue_removal {
-                self.particles.remove(i);
-            }
-            self.particles[i].update(delta);
         }
     }
 
     pub fn draw(&self, player: &Player) {
-        for i in 0..self.asteroids.size() {
-            self.asteroids[i].draw(player);
+        for a in &self.asteroids {
+            a.draw(player);
         }
-        for i in 0..self.particles.size() {
-            self.particles[i].draw();
+        for p in &self.particles {
+            p.draw();
         }
     }
 

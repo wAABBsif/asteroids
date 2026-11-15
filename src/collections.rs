@@ -8,14 +8,26 @@ pub struct SwapArray<T, const N: usize> {
 impl<T, const N: usize> SwapArray<T, N>
     where T: Copy + Clone
 {
-    pub fn add(&mut self, element: impl Into<T>) {
-        self.items[self.size] = element.into();
+    pub fn add(&mut self, item: impl Into<T>) {
+        self.items[self.size] = item.into();
         self.size += 1;
     }
 
     pub fn remove(&mut self, index: usize) {
         self.size -= 1;
         self.items[index] = self.items[self.size];
+    }
+
+    pub fn retain<F>(&mut self, f: F)
+        where F: Fn(&T) -> bool
+    {
+        let mut i = 0;
+        while i < self.size {
+            if !f(&self.items[i]) {
+                self.remove(i);
+            }
+            i += 1;
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -53,5 +65,23 @@ impl<T, const N: usize> Index<usize> for SwapArray<T, N> {
 impl<T, const N: usize> IndexMut<usize> for SwapArray<T, N> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.items[index]
+    }
+}
+
+impl<'a, T, const N: usize> IntoIterator for &'a SwapArray<T, N> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items[0..self.size].iter()
+    }
+}
+
+impl<'a, T, const N: usize> IntoIterator for &'a mut SwapArray<T, N> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items[0..self.size].iter_mut()
     }
 }
