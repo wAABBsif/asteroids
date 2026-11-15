@@ -4,11 +4,6 @@ use crate::game::screen;
 
 const WORLD_WIDTH: f32 = 16.0;
 
-pub enum Axis {
-    X,
-    Y
-}
-
 pub fn screen_size() -> Vec2 {
     if cfg!(test) {
         return vec2(16.0, 9.0);
@@ -44,6 +39,15 @@ pub fn screen_to_world_offset(screen_coords: Vec2) -> Vec2 {
     screen_to_world(screen_coords) - world_size() / vec2(2.0, 2.0)
 }
 
+pub enum Axis {
+    X,
+    Y
+}
+
+pub trait EdgeBehavior {
+    fn on_hit_screen_edge(&mut self, axis: Axis);
+}
+
 pub fn screen_wrap(axis: Axis, position: &mut Vec2, size: f32) {
     let bounds = screen::world_size() * 0.5 + Vec2::splat(size);
     match axis {
@@ -62,10 +66,6 @@ pub fn handle_edge_behavior(obj: &mut impl EdgeBehavior, position: Vec2, size: f
     if position.y < -bounds.y || position.y > bounds.y {
         obj.on_hit_screen_edge(Axis::Y);
     }
-}
-
-pub trait EdgeBehavior {
-    fn on_hit_screen_edge(&mut self, axis: Axis);
 }
 
 #[cfg(test)]

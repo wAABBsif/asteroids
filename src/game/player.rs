@@ -24,12 +24,6 @@ const RESPAWN_TIME: f32 = 2.0;
 const INVINCIBILITY_TIME: f32 = 1.0;
 const INVINCIBILITY_DISAPPEAR_TIME: f32 = 0.2;
 
-struct Trail {
-    head: usize,
-    timer: f32,
-    pts: [Vec2; TRAIL_LENGTH],
-}
-
 pub struct Player {
     pub is_active: bool,
     pub lives: u16,
@@ -81,6 +75,8 @@ impl Player {
         } else {
             self.handle_inactive(delta);
         }
+        self.trail.update(delta, self.position, self.up_direction(), self.velocity,
+            self.is_accelerating);
     }
 
     fn handle_active(&mut self, delta: f32, bullet_manager: &mut BulletManager,
@@ -92,7 +88,6 @@ impl Player {
         self.update_transform(delta);
         self.handle_shooting(bullet_manager);
         self.handle_collision(asteroid_manager);
-        self.update_trail(delta);
     }
 
     fn handle_inactive(&mut self, delta: f32) {
@@ -103,7 +98,6 @@ impl Player {
         }
         self.position = Vec2::ZERO;
         self.is_accelerating = false;
-        self.update_trail(delta);
     }
 
     fn handle_rotation(&mut self) {
@@ -148,21 +142,8 @@ impl Player {
         }
     }
 
-    fn update_trail(&mut self, delta: f32) {
-        self.trail.timer -= delta;
-        while self.trail.timer <= 0.0 {
-            self.trail.head = (self.trail.head + 1) % TRAIL_LENGTH;
-            self.trail.pts[self.trail.head] = if self.is_accelerating {
-                self.position - self.up_direction() * HEIGHT - self.velocity * -self.trail.timer
-            } else {
-                Vec2::NAN
-            };
-            self.trail.timer += TRAIL_INTERVAL;
-        }
-    }
-
     pub fn draw(&self) {
-        self.draw_trail();
+        self.trail.draw();
 
         if !self.is_active {
             return;
@@ -205,22 +186,6 @@ impl Player {
         }
     }
 
-    fn draw_trail(&self) {
-        for i in 0..TRAIL_LENGTH-1 {
-            let trail_idx = if i <= self.trail.head {
-                self.trail.head - i
-            } else {
-                TRAIL_LENGTH + self.trail.head - i
-            };
-            let point = screen::world_to_screen_offset(self.trail.pts[trail_idx]);
-            let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
-            let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
-            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP) * screen::pixels_per_unit();
-
-            shapes::draw_circle(point.x, point.y, radius, color);
-        }
-    }
-
     fn right_direction(&self) -> Vec2 {
         vec2(0.0, -1.0).rotate(Vec2::from_angle(self.angle))
     }
@@ -233,5 +198,44 @@ impl Player {
 impl EdgeBehavior for Player {
     fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
         screen::screen_wrap(axis, &mut self.position, HEIGHT.max(WIDTH));
+    }
+}
+
+struct Trail {
+    head: usize,
+    timer: f32,
+    pts: [Vec2; TRAIL_LENGTH],
+}
+
+impl Trail {
+    fn update(&mut self, delta: f32, position: Vec2, up_dir: Vec2, velocity: Vec2,
+        is_accelerating: bool)
+    {
+        self.timer -= delta;
+        while self.timer <= 0.0 {
+            self.head = (self.head + 1) % TRAIL_LENGTH;
+            self.pts[self.head] = if is_accelerating {
+                position - up_dir * HEIGHT + velocity * self.timer
+            } else {
+                Vec2::NAN
+            };
+            self.timer += TRAIL_INTERVAL;
+        }
+    }
+
+    fn draw(&self) {
+        for i in 0..TRAIL_LENGTH-1 {
+            let trail_idx = if i <= self.head {
+                self.head - i
+            } else {
+                TRAIL_LENGTH + self.head - i
+            };
+            let point = screen::world_to_screen_offset(self.pts[trail_idx]);
+            let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
+            let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
+            let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP)
+                * screen::pixels_per_unit();
+            shapes::draw_circle(point.x, point.y, radius, color);
+        }
     }
 }

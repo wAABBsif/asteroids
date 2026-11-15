@@ -1,4 +1,4 @@
-use std::f32::{NAN, consts::PI};
+use std::f32::consts::PI;
 
 use macroquad::{math::*, *};
 
@@ -45,148 +45,10 @@ const PARTICLE_MAX_SPEED: f32 = 8.0;
 const MAX_PARTICLE_COUNT: usize = 256;
 const PARTICLE_RADIUS_RATIO: f32 = 64.0;
 
-#[derive(Clone, Copy, Default)]
-pub struct Asteroid {
-    queue_removal: bool,
-    pub position: Vec2,
-    pub velocity: Vec2,
-    pub radius: f32,
-    shape: Polygon<MAX_POINT_COUNT>,
-}
-
-#[derive(Clone, Copy, Default)]
-struct Particle {
-    queue_removal: bool,
-    position: Vec2,
-    velocity: Vec2,
-    shape: Polygon<3>
-}
-
-#[derive(Clone, Copy)]
-struct Polygon<const C: usize> {
-    points: [Vec2; C],
-}
-
 pub struct AsteroidManager {
     asteroids: SwapArray<Asteroid, MAX_COUNT>,
     particles: SwapArray<Particle, MAX_PARTICLE_COUNT>,
     wave_count: u64,
-}
-
-impl Asteroid {
-    pub fn new(position: Vec2, radius: f32, angle: f32, speed_factor: f32) -> Asteroid {
-        Asteroid {
-            queue_removal: false,
-            position: position,
-            velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
-            radius: radius,
-            shape: Polygon::new((radius * POINT_RADIUS_RATIO) as usize, SHAPE_RAND_FACTOR / radius)
-        }
-    }
-
-    pub fn update(&mut self, delta: f32) {
-        self.position += self.velocity * delta;
-        screen::handle_edge_behavior(self, self.position, self.radius);
-    }
-
-    pub fn draw(&self, player: &Player) {
-        let pt_count = (self.radius * POINT_RADIUS_RATIO) as usize;
-        for i in 0..pt_count {
-            let pos = screen::world_to_screen_offset(self.position);
-            let curr_point = self.shape.points[i];
-            let next_point = self.shape.points[(i + 1) % pt_count];
-            let triangle_pts = [
-                pos,
-                pos + screen::world_to_screen(curr_point) * self.radius,
-                pos + screen::world_to_screen(next_point) * self.radius,
-            ];
-            let player_dir = (player.position - self.position).normalize();
-            let normal = (curr_point + next_point) * 0.5;
-            let dist = player.position.distance(self.position);
-            let lightness = if player.is_active {
-                (normal.dot(player_dir) + 1.0) * 0.5 / dist.sqrt()
-            } else {
-                0.0
-            };
-            let color = macroquad::color::Color {
-                r: DARK_COLOR.r + (BRIGHT_COLOR.r - DARK_COLOR.r) * lightness,
-                g: DARK_COLOR.g + (BRIGHT_COLOR.g - DARK_COLOR.g) * lightness,
-                b: DARK_COLOR.b + (BRIGHT_COLOR.b - DARK_COLOR.b) * lightness,
-                a: 1.0
-            };
-            shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], color);
-
-        }
-    }
-
-    pub fn is_point_inside(&self, point: Vec2) -> bool {
-        return self.position.distance_squared(point) <= self.radius * self.radius
-    }
-
-    fn max_speed(radius: f32) -> f32 {
-        MAX_SPEED_CONSTANT + MAX_SPEED_COEFFICIENT / radius
-    }
-}
-
-impl EdgeBehavior for Asteroid {
-    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
-        screen::screen_wrap(axis, &mut self.position, self.radius);
-    }
-}
-
-impl Particle {
-    pub fn new(position: Vec2, angle: f32, speed: f32) -> Particle {
-        Particle {
-            queue_removal: false,
-            position: position,
-            velocity: Vec2::from_angle(angle) * speed,
-            shape: Polygon::new(3, PARTICLE_SHAPE_RAND_FACTOR),
-        }
-    }
-
-    pub fn update(&mut self, delta: f32) {
-        self.position += self.velocity * delta;
-        screen::handle_edge_behavior(self, self.position, PARTICLE_RADIUS * PARTICLE_SHAPE_RAND_FACTOR);
-    }
-
-    pub fn draw(&self) {
-        let pos = screen::world_to_screen_offset(self.position);
-        let triangle_pts = [
-            pos + screen::world_to_screen(self.shape.points[0]) * PARTICLE_RADIUS,
-            pos + screen::world_to_screen(self.shape.points[1]) * PARTICLE_RADIUS,
-            pos + screen::world_to_screen(self.shape.points[2]) * PARTICLE_RADIUS,
-        ];
-        shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], DARK_COLOR);
-    }
-}
-
-impl EdgeBehavior for Particle {
-    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
-        self.queue_removal = true;
-    }
-}
-
-impl<const C: usize> Polygon<C> {
-    fn new(count: usize, rand_factor: f32) -> Polygon<C> {
-        let mut result = Polygon {
-            points: [Vec2::NAN; C]
-        };
-        for i in 0..count {
-            let angle = (i as f32) / (count as f32) * 2.0 * PI;
-            let dist = 1.0 + rand::RandomRange::gen_range(-rand_factor, rand_factor);
-            result.points[i] = Vec2::from_angle(angle) * dist;
-        }
-
-        result
-    }
-}
-
-impl<const C: usize> Default for Polygon<C> {
-    fn default() -> Self {
-        Self {
-            points: [Vec2::default(); C]
-        }
-    }
 }
 
 impl AsteroidManager {
@@ -309,5 +171,144 @@ impl AsteroidManager {
         let pos = asteroid_position + Vec2::from_angle(pos_angle) * pos_radius;
 
         self.particles.add(Particle::new(pos, vel_angle, speed));
+    }
+}
+
+#[derive(Clone, Copy, Default)]
+pub struct Asteroid {
+    queue_removal: bool,
+    pub position: Vec2,
+    pub velocity: Vec2,
+    pub radius: f32,
+    shape: Polygon<MAX_POINT_COUNT>,
+}
+
+impl Asteroid {
+    pub fn new(position: Vec2, radius: f32, angle: f32, speed_factor: f32) -> Asteroid {
+        Asteroid {
+            queue_removal: false,
+            position: position,
+            velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
+            radius: radius,
+            shape: Polygon::new((radius * POINT_RADIUS_RATIO) as usize, SHAPE_RAND_FACTOR / radius)
+        }
+    }
+
+    pub fn update(&mut self, delta: f32) {
+        self.position += self.velocity * delta;
+        screen::handle_edge_behavior(self, self.position, self.radius);
+    }
+
+    pub fn draw(&self, player: &Player) {
+        let pt_count = (self.radius * POINT_RADIUS_RATIO) as usize;
+        for i in 0..pt_count {
+            let pos = screen::world_to_screen_offset(self.position);
+            let curr_point = self.shape.points[i];
+            let next_point = self.shape.points[(i + 1) % pt_count];
+            let triangle_pts = [
+                pos,
+                pos + screen::world_to_screen(curr_point) * self.radius,
+                pos + screen::world_to_screen(next_point) * self.radius,
+            ];
+            let player_dir = (player.position - self.position).normalize();
+            let normal = (curr_point + next_point) * 0.5;
+            let dist = player.position.distance(self.position);
+            let lightness = if player.is_active {
+                (normal.dot(player_dir) + 1.0) * 0.5 / dist.sqrt()
+            } else {
+                0.0
+            };
+            let color = macroquad::color::Color {
+                r: DARK_COLOR.r + (BRIGHT_COLOR.r - DARK_COLOR.r) * lightness,
+                g: DARK_COLOR.g + (BRIGHT_COLOR.g - DARK_COLOR.g) * lightness,
+                b: DARK_COLOR.b + (BRIGHT_COLOR.b - DARK_COLOR.b) * lightness,
+                a: 1.0
+            };
+            shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], color);
+
+        }
+    }
+
+    pub fn is_point_inside(&self, point: Vec2) -> bool {
+        return self.position.distance_squared(point) <= self.radius * self.radius
+    }
+
+    fn max_speed(radius: f32) -> f32 {
+        MAX_SPEED_CONSTANT + MAX_SPEED_COEFFICIENT / radius
+    }
+}
+
+impl EdgeBehavior for Asteroid {
+    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+        screen::screen_wrap(axis, &mut self.position, self.radius);
+    }
+}
+
+#[derive(Clone, Copy, Default)]
+struct Particle {
+    queue_removal: bool,
+    position: Vec2,
+    velocity: Vec2,
+    shape: Polygon<3>
+}
+
+impl Particle {
+    pub fn new(position: Vec2, angle: f32, speed: f32) -> Particle {
+        Particle {
+            queue_removal: false,
+            position: position,
+            velocity: Vec2::from_angle(angle) * speed,
+            shape: Polygon::new(3, PARTICLE_SHAPE_RAND_FACTOR),
+        }
+    }
+
+    pub fn update(&mut self, delta: f32) {
+        self.position += self.velocity * delta;
+        screen::handle_edge_behavior(self, self.position, PARTICLE_RADIUS * PARTICLE_SHAPE_RAND_FACTOR);
+    }
+
+    pub fn draw(&self) {
+        let pos = screen::world_to_screen_offset(self.position);
+        let triangle_pts = [
+            pos + screen::world_to_screen(self.shape.points[0]) * PARTICLE_RADIUS,
+            pos + screen::world_to_screen(self.shape.points[1]) * PARTICLE_RADIUS,
+            pos + screen::world_to_screen(self.shape.points[2]) * PARTICLE_RADIUS,
+        ];
+        shapes::draw_triangle(triangle_pts[0], triangle_pts[1], triangle_pts[2], DARK_COLOR);
+    }
+}
+
+impl EdgeBehavior for Particle {
+    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
+        self.queue_removal = true;
+    }
+}
+
+
+#[derive(Clone, Copy)]
+struct Polygon<const C: usize> {
+    points: [Vec2; C],
+}
+
+impl<const C: usize> Polygon<C> {
+    fn new(count: usize, rand_factor: f32) -> Polygon<C> {
+        let mut result = Polygon {
+            points: [Vec2::NAN; C]
+        };
+        for i in 0..count {
+            let angle = (i as f32) / (count as f32) * 2.0 * PI;
+            let dist = 1.0 + rand::RandomRange::gen_range(-rand_factor, rand_factor);
+            result.points[i] = Vec2::from_angle(angle) * dist;
+        }
+
+        result
+    }
+}
+
+impl<const C: usize> Default for Polygon<C> {
+    fn default() -> Self {
+        Self {
+            points: [Vec2::default(); C]
+        }
     }
 }

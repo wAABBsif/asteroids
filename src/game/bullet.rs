@@ -14,16 +14,48 @@ const LIFETIME: f32 = 2.0;
 
 const MAX_COUNT: usize = 32;
 
+pub struct BulletManager {
+    bullets: SwapArray<Bullet, MAX_COUNT>,
+}
+
+impl BulletManager {
+    pub fn new() -> BulletManager {
+        BulletManager {
+            bullets: SwapArray::default()
+        }
+    }
+
+    pub fn create_bullet(&mut self, position: Vec2, angle: f32) {
+        if self.bullets.is_full() {
+            return;
+        }
+        self.bullets.add(Bullet::new(position, angle));
+    }
+
+    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
+        score_manager: &mut ScoreManager)
+    {
+        for i in 0..self.bullets.size() {
+            if self.bullets[i].queue_removal {
+                self.bullets.remove(i);
+            }
+            self.bullets[i].update(delta, asteroid_manager, score_manager);
+        }
+    }
+
+    pub fn draw(&self) {
+        for i in 0..self.bullets.size() {
+            self.bullets[i].draw();
+        }
+    }
+}
+
 #[derive(Default, Copy, Clone)]
 pub struct Bullet {
     queue_removal: bool,
     pub position: Vec2,
     pub velocity: Vec2,
     pub time_left: f32,
-}
-
-pub struct BulletManager {
-    bullets: SwapArray<Bullet, MAX_COUNT>,
 }
 
 impl Bullet {
@@ -83,37 +115,5 @@ impl Bullet {
 impl EdgeBehavior for Bullet {
     fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
         screen::screen_wrap(axis, &mut self.position, RADIUS);
-    }
-}
-
-impl BulletManager {
-    pub fn new() -> BulletManager {
-        BulletManager {
-            bullets: SwapArray::default()
-        }
-    }
-
-    pub fn create_bullet(&mut self, position: Vec2, angle: f32) {
-        if self.bullets.is_full() {
-            return;
-        }
-        self.bullets.add(Bullet::new(position, angle));
-    }
-
-    pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
-        score_manager: &mut ScoreManager)
-    {
-        for i in 0..self.bullets.size() {
-            if self.bullets[i].queue_removal {
-                self.bullets.remove(i);
-            }
-            self.bullets[i].update(delta, asteroid_manager, score_manager);
-        }
-    }
-
-    pub fn draw(&self) {
-        for i in 0..self.bullets.size() {
-            self.bullets[i].draw();
-        }
     }
 }
