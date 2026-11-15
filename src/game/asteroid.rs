@@ -67,8 +67,8 @@ impl AsteroidManager {
         for p in &mut self.particles {
             p.update(delta);
         }
-        self.asteroids.retain(|&a| !a.queue_removal);
-        self.particles.retain(|&p| !p.queue_removal);
+        self.asteroids.retain(|&a| !a.position.is_nan());
+        self.particles.retain(|&p| !p.position.is_nan());
         if self.asteroids.size() == 0 {
             self.initialize_wave();
         }
@@ -120,11 +120,10 @@ impl AsteroidManager {
         score_manager.score += (asteroid.radius * SCORE_RADIUS_FACTOR).round() as u64;
         score_manager.score += score_manager.combo as u64 * SCORE_COMBO_FACTOR;
         score_manager.increase_combo();
-        asteroid.queue_removal = true;
         let position = asteroid.position;
         let radius = asteroid.radius;
-        for _i in 0..(asteroid.radius.powi(2) * PARTICLE_RADIUS_SQRT_RATIO) as usize
-        {
+        asteroid.position = Vec2::NAN;
+        for _i in 0..(radius.powi(2) * PARTICLE_RADIUS_SQRT_RATIO) as usize {
             self.create_particle(position, radius);
         }
         if radius <= MIN_RADIUS {
@@ -144,8 +143,7 @@ impl AsteroidManager {
         None
     }
 
-    fn create_asteroid(&mut self, position: Vec2, radius: f32)
-    {
+    fn create_asteroid(&mut self, position: Vec2, radius: f32) {
         if self.asteroids.is_full() {
             return
         }
@@ -173,7 +171,6 @@ impl AsteroidManager {
 
 #[derive(Clone, Copy, Default)]
 pub struct Asteroid {
-    queue_removal: bool,
     pub position: Vec2,
     pub velocity: Vec2,
     pub radius: f32,
@@ -183,7 +180,6 @@ pub struct Asteroid {
 impl Asteroid {
     pub fn new(position: Vec2, radius: f32, angle: f32, speed_factor: f32) -> Asteroid {
         Asteroid {
-            queue_removal: false,
             position: position,
             velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
             radius: radius,
@@ -243,7 +239,6 @@ impl EdgeBehavior for Asteroid {
 
 #[derive(Clone, Copy, Default)]
 struct Particle {
-    queue_removal: bool,
     position: Vec2,
     velocity: Vec2,
     shape: Polygon<3>
@@ -252,7 +247,6 @@ struct Particle {
 impl Particle {
     pub fn new(position: Vec2, angle: f32, speed: f32) -> Particle {
         Particle {
-            queue_removal: false,
             position: position,
             velocity: Vec2::from_angle(angle) * speed,
             shape: Polygon::new(3, PARTICLE_SHAPE_RAND_FACTOR),
@@ -277,7 +271,7 @@ impl Particle {
 
 impl EdgeBehavior for Particle {
     fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
-        self.queue_removal = true;
+        self.position = Vec2::NAN;
     }
 }
 

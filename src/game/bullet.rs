@@ -39,7 +39,7 @@ impl BulletManager {
             b.update(delta, asteroid_manager, score_manager);
         }
 
-        self.bullets.retain(|&b| !b.queue_removal);
+        self.bullets.retain(|&b| b.time_left > 0.0);
     }
 
     pub fn draw(&self) {
@@ -51,18 +51,16 @@ impl BulletManager {
 
 #[derive(Default, Copy, Clone)]
 pub struct Bullet {
-    queue_removal: bool,
     pub position: Vec2,
-    pub velocity: Vec2,
+    pub angle: f32,
     pub time_left: f32,
 }
 
 impl Bullet {
     pub fn new(position: Vec2, angle: f32) -> Bullet {
         Bullet {
-            queue_removal: false,
             position: position,
-            velocity: Vec2::from_angle(angle) * SPEED,
+            angle: angle,
             time_left: LIFETIME,
         }
     }
@@ -70,14 +68,11 @@ impl Bullet {
     pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
         score_manager: &mut ScoreManager)
     {
-        self.position += self.velocity * delta;
+        self.position += Vec2::from_angle(self.angle) * SPEED * delta;
         screen::handle_edge_behavior(self, self.position, RADIUS);
         self.handle_collision(asteroid_manager, score_manager);
 
         self.time_left -= delta; 
-        if self.time_left <= 0.0 {
-            self.queue_removal = true;
-        }
     }
 
     fn handle_collision(&mut self, asteroid_manager: &mut AsteroidManager,
@@ -87,7 +82,7 @@ impl Bullet {
         if colliding.is_some() {
             let colliding = colliding.unwrap();
             asteroid_manager.destroy_asteroid(colliding, score_manager);
-            self.queue_removal = true;
+            self.time_left = -1.0;
         }
     }
 
@@ -99,7 +94,7 @@ impl Bullet {
         let vertices = [
             screen::world_to_screen_offset(self.position + self.right_direction() * RADIUS),
             screen::world_to_screen_offset(self.position - self.right_direction() * RADIUS),
-            screen::world_to_screen_offset(self.position - self.velocity.normalize() * LENGTH)
+            screen::world_to_screen_offset(self.position - self.up_direction() * LENGTH)
         ];
 
         shapes::draw_triangle(vertices[0], vertices[1], vertices[2], color);
@@ -107,7 +102,11 @@ impl Bullet {
     }
 
     pub fn right_direction(&self) -> Vec2 {
-        self.velocity.normalize().rotate(Vec2::from_angle(PI * 0.5))
+        Vec2::from_angle(self.angle + PI * 0.5)
+    }
+
+    pub fn up_direction(&self) -> Vec2 {
+        Vec2::from_angle(self.angle)
     }
 }
 
