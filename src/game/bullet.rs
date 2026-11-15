@@ -1,6 +1,7 @@
 use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
+use crate::swap_array::SwapArray;
 use crate::game::{asteroid::AsteroidManager, score::ScoreManager, screen::{self, EdgeBehavior}};
 
 const RADIUS: f32 = 0.05;
@@ -13,43 +14,38 @@ const LIFETIME: f32 = 2.0;
 
 const MAX_COUNT: usize = 32;
 
-#[derive(Copy, Clone)]
+#[derive(Default, Copy, Clone)]
 pub struct Bullet {
+    queue_removal: bool,
     pub position: Vec2,
     pub velocity: Vec2,
     pub time_left: f32,
-    is_active: bool,
 }
 
 pub struct BulletManager {
-    bullets: [Bullet; MAX_COUNT],
-    head: usize,
+    bullets: SwapArray<Bullet, MAX_COUNT>,
 }
 
 impl Bullet {
     pub fn new(position: Vec2, angle: f32) -> Bullet {
         Bullet {
+            queue_removal: false,
             position: position,
             velocity: Vec2::from_angle(angle) * SPEED,
             time_left: LIFETIME,
-            is_active: true,
         }
     }
 
     pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
         score_manager: &mut ScoreManager)
     {
-        if !self.is_active {
-            return;
-        }
-
         self.position += self.velocity * delta;
         screen::handle_edge_behavior(self, self.position, RADIUS);
         self.handle_collision(asteroid_manager, score_manager);
 
         self.time_left -= delta; 
         if self.time_left <= 0.0 {
-            self.is_active = false;
+            self.queue_removal = true;
         }
     }
 
@@ -60,15 +56,11 @@ impl Bullet {
         if colliding.is_some() {
             let colliding = colliding.unwrap();
             asteroid_manager.destroy_asteroid(colliding, score_manager);
-            self.is_active = false;
+            self.queue_removal = true;
         }
     }
 
     pub fn draw(&self) {
-        if !self.is_active {
-            return;
-        }
-
         let alpha = clamp(self.time_left / (LIFETIME - FADE_START_TIME), 0.0, 1.0);
         let color = COLOR.with_alpha(alpha);
 
@@ -97,39 +89,31 @@ impl EdgeBehavior for Bullet {
 impl BulletManager {
     pub fn new() -> BulletManager {
         BulletManager {
-            bullets: [
-                Bullet {
-                    position: Vec2::NAN,
-                    velocity: Vec2::NAN,
-                    time_left: 0.0,
-                    is_active: false,
-                }; MAX_COUNT
-            ],
-            head: 0
+            bullets: SwapArray::default()
         }
     }
 
-    pub fn create_bullet(&mut self, position: Vec2, angle: f32) -> Option<usize> {
-        if self.bullets[self.head].is_active {
-            return None
+    pub fn create_bullet(&mut self, position: Vec2, angle: f32) {
+        if self.bullets.is_full() {
+            return;
         }
-        self.bullets[self.head] = Bullet::new(position, angle);
-        let result = self.head;
-        self.head = (self.head + 1) % MAX_COUNT;
-        Some(result)
+        self.bullets.add(Bullet::new(position, angle));
     }
 
     pub fn update(&mut self, delta: f32, asteroid_manager: &mut AsteroidManager,
         score_manager: &mut ScoreManager)
     {
-        for b in &mut self.bullets {
-            b.update(delta, asteroid_manager, score_manager);
+        for i in 0..self.bullets.size() {
+            if self.bullets[i].queue_removal {
+                self.bullets.remove(i);
+            }
+            self.bullets[i].update(delta, asteroid_manager, score_manager);
         }
     }
 
     pub fn draw(&self) {
-        for b in self.bullets {
-            b.draw();
+        for i in 0..self.bullets.size() {
+            self.bullets[i].draw();
         }
     }
 }
