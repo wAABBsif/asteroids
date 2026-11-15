@@ -20,7 +20,7 @@ const ASTEROIDS_WAVE_MIN: f32 = 2.0;
 const ASTEROIDS_WAVE_RATE: f32 = 1.0;
 const ASTEROIDS_WAVE_MAX: u64 = 11;
 
-const POINT_RADIUS_RATIO: f32 = 16.0;
+const POLYGON_COUNT: usize = 16;
 const SHAPE_RAND_FACTOR: f32 = 0.125;
 const BRIGHT_COLOR: color::Color = color::Color {
     r: 0.4,
@@ -35,7 +35,6 @@ const DARK_COLOR: color::Color = color::Color {
     a: 1.0
 };
 
-const MAX_POINT_COUNT: usize = (POINT_RADIUS_RATIO * SPAWN_RADIUS) as usize;
 const MAX_COUNT: usize = 48;
 
 const PARTICLE_SHAPE_RAND_FACTOR: f32 = 2.0;
@@ -174,7 +173,7 @@ pub struct Asteroid {
     pub position: Vec2,
     pub velocity: Vec2,
     pub radius: f32,
-    shape: Polygon<MAX_POINT_COUNT>,
+    shape: Polygon<POLYGON_COUNT>,
 }
 
 impl Asteroid {
@@ -183,7 +182,7 @@ impl Asteroid {
             position: position,
             velocity: Vec2::from_angle(angle) * speed_factor * Asteroid::max_speed(radius),
             radius: radius,
-            shape: Polygon::new((radius * POINT_RADIUS_RATIO) as usize, SHAPE_RAND_FACTOR / radius)
+            shape: Polygon::new(POLYGON_COUNT, SHAPE_RAND_FACTOR)
         }
     }
 
@@ -193,7 +192,7 @@ impl Asteroid {
     }
 
     pub fn draw(&self, player: &Player) {
-        let pt_count = (self.radius * POINT_RADIUS_RATIO) as usize;
+        let pt_count = POLYGON_COUNT;
         for i in 0..pt_count {
             let player_dir = (player.position - self.position).normalize();
             let normal = Vec2::from_angle((i as f32) / (pt_count as f32) * 2.0 * PI);
