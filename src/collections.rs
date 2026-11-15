@@ -69,6 +69,15 @@ impl<T, const N: usize> IndexMut<usize> for SwapArray<T, N> {
     }
 }
 
+impl<T, const N: usize> IntoIterator for SwapArray<T, N> {
+    type Item = T;
+    type IntoIter = iter::Take<std::array::IntoIter<T, N>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.into_iter().take(N)
+    }
+}
+
 impl<'a, T, const N: usize> IntoIterator for &'a SwapArray<T, N> {
     type Item = &'a T;
     type IntoIter = std::slice::Iter<'a, T>;
@@ -127,6 +136,19 @@ impl<T, const N: usize> Index<usize> for CircleArray<T, N> {
 impl<T, const N: usize> IndexMut<usize> for CircleArray<T, N> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.items[(self.head + index) % N]
+    }
+}
+
+impl<T, const N: usize> IntoIterator for CircleArray<T, N>
+    where T: Clone {
+    type Item = T;
+    type IntoIter = std::iter::Chain<std::vec::IntoIter<T>, std::vec::IntoIter<T>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let split = self.items.split_at(self.head);
+        let first = split.0.to_vec();
+        let second = split.1.to_vec();
+        first.into_iter().chain(second.into_iter())
     }
 }
 
