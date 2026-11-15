@@ -1,4 +1,5 @@
 use std::ops::*;
+use std::iter;
 
 pub struct SwapArray<T, const N: usize> {
     items: Box<[T; N]>,
@@ -83,5 +84,67 @@ impl<'a, T, const N: usize> IntoIterator for &'a mut SwapArray<T, N> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.items[0..self.size].iter_mut()
+    }
+}
+
+pub struct CircleArray<T, const N: usize> {
+    items: Box<[T; N]>,
+    head: usize
+}
+
+impl<T, const N: usize> CircleArray<T, N>
+    where T: Copy + Clone
+{
+    pub fn add(&mut self, item: impl Into<T>) {
+        self.items[self.head] = item.into();
+        self.head = (self.head + 1) % N;
+    }
+
+    pub fn head(&self) -> usize {
+        self.head
+    }
+}
+
+impl<T, const N: usize> Default for CircleArray<T, N>
+    where T: Copy + Clone + Default
+{
+    fn default() -> Self {
+        CircleArray {
+            items: Box::new([T::default(); N]),
+            head: 0
+        }
+    }
+}
+
+impl<T, const N: usize> Index<usize> for CircleArray<T, N> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.items[(self.head + index) % N]
+    }
+}
+
+impl<T, const N: usize> IndexMut<usize> for CircleArray<T, N> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.items[(self.head + index) % N]
+    }
+}
+
+impl<'a, T, const N: usize> IntoIterator for &'a CircleArray<T, N> {
+    type Item = &'a T;
+    type IntoIter = iter::Take<iter::Skip<iter::Cycle<std::slice::Iter<'a, T>>>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.iter().cycle().skip(self.head).take(N)
+    }
+}
+
+impl<'a, T, const N: usize> IntoIterator for &'a mut CircleArray<T, N> {
+    type Item = &'a mut T;
+    type IntoIter = iter::Chain<std::slice::IterMut<'a, T>, std::slice::IterMut<'a, T>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let split = self.items.split_at_mut(self.head);
+        split.0.iter_mut().chain(split.1.iter_mut())
     }
 }

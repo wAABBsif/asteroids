@@ -2,6 +2,7 @@ use std::f32::consts::PI;
 
 use macroquad::{math::*, *};
 
+use crate::collections::CircleArray;
 use crate::game::{asteroid::AsteroidManager, bullet::BulletManager, screen::{self, EdgeBehavior}};
 
 const WIDTH: f32 = 0.2;
@@ -48,9 +49,8 @@ impl Player {
             is_accelerating: false,
             timer: 0.0,
             trail: Trail {
+                pts: CircleArray::default(),
                 timer: 0.0,
-                head: 0,
-                pts: [Vec2::ZERO; TRAIL_LENGTH],
             },
         }
     }
@@ -198,9 +198,8 @@ impl EdgeBehavior for Player {
 }
 
 struct Trail {
-    head: usize,
-    timer: f32,
-    pts: [Vec2; TRAIL_LENGTH],
+    pts: CircleArray<Vec2, TRAIL_LENGTH>,
+    timer: f32
 }
 
 impl Trail {
@@ -209,25 +208,19 @@ impl Trail {
     {
         self.timer -= delta;
         while self.timer <= 0.0 {
-            self.head = (self.head + 1) % TRAIL_LENGTH;
-            self.pts[self.head] = if is_accelerating {
+            self.pts.add(if is_accelerating {
                 position - up_dir * HEIGHT + velocity * self.timer
             } else {
                 Vec2::NAN
-            };
+            });
             self.timer += TRAIL_INTERVAL;
         }
     }
 
     fn draw(&self) {
-        for i in 0..TRAIL_LENGTH-1 {
-            let trail_idx = if i <= self.head {
-                self.head - i
-            } else {
-                TRAIL_LENGTH + self.head - i
-            };
-            let point = screen::world_to_screen_offset(self.pts[trail_idx]);
-            let point_frac = (TRAIL_LENGTH - i) as f32 / TRAIL_LENGTH as f32;
+        for (i, pt) in (&self.pts).into_iter().enumerate() {
+            let point = screen::world_to_screen_offset(*pt);
+            let point_frac = (i) as f32 / TRAIL_LENGTH as f32;
             let color = TRAIL_COLOR.with_alpha(point_frac.powf(TRAIL_ALPHA_EXP));
             let radius = TRAIL_MAX_RADIUS * point_frac.powf(TRAIL_RADIUS_EXP)
                 * screen::pixels_per_unit();
