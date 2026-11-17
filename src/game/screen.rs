@@ -1,7 +1,5 @@
 use macroquad::math::*;
 
-use crate::game::screen;
-
 const WORLD_WIDTH: f32 = 16.0;
 
 pub fn screen_size() -> Vec2 {
@@ -41,7 +39,7 @@ pub trait EdgeBehavior {
 }
 
 pub fn screen_wrap(axis: Axis, position: &mut Vec2, size: f32) {
-    let bounds = screen::world_size() * 0.5 + Vec2::splat(size);
+    let bounds = world_size() * 0.5 + Vec2::splat(size);
     match axis {
         Axis::X => position.x = -position.x.clamp(-bounds.x, bounds.x),
         Axis::Y => position.y = -position.y.clamp(-bounds.y, bounds.y),
@@ -49,7 +47,7 @@ pub fn screen_wrap(axis: Axis, position: &mut Vec2, size: f32) {
 }
 
 pub fn handle_edge_behavior(obj: &mut impl EdgeBehavior, position: Vec2, size: f32) {
-    let bounds = screen::world_size() * 0.5 + Vec2::splat(size);
+    let bounds = world_size() * 0.5 + Vec2::splat(size);
 
     if position.x < -bounds.x || position.x > bounds.x {
         obj.on_hit_screen_edge(Axis::X);
