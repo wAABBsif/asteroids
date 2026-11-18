@@ -17,7 +17,7 @@ fn initialize() -> Result<Vec<Box<dyn Scene>>, Box<dyn std::error::Error>> {
     macroquad::input::prevent_quit();
 
     println!("Initializing game state");
-    let scenes: Vec<Box<dyn Scene>> = vec![Box::new(crate::game::GameState::new())];
+    let scenes: Vec<Box<dyn Scene>> = vec![Box::new(crate::game::GameScene::new())];
 
     Ok(scenes)
 }

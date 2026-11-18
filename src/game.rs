@@ -15,7 +15,7 @@ use hud::HUD;
 
 use crate::scenes::{Transition, Scene};
 
-pub struct GameState {
+pub struct GameScene {
     pub player: Player,
     pub bullet_manager: BulletManager,
     pub asteroid_manager: AsteroidManager,
@@ -23,9 +23,9 @@ pub struct GameState {
     pub hud: HUD,
 }
 
-impl GameState {
-    pub fn new() -> GameState {
-        GameState {
+impl GameScene {
+    pub fn new() -> GameScene {
+        GameScene {
             player: Player::new(),
             bullet_manager: BulletManager::new(),
             asteroid_manager: AsteroidManager::new(),
@@ -35,7 +35,7 @@ impl GameState {
     }
 }
 
-impl Scene for GameState {
+impl Scene for GameScene {
     fn update(&mut self, delta: f32) -> Transition {
         self.player.update(delta, &mut self.bullet_manager, &mut self.asteroid_manager);
         self.bullet_manager.update(delta, &mut self.asteroid_manager, &mut self.score_manager);
