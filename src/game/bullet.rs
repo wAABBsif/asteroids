@@ -2,7 +2,8 @@ use macroquad::{math::*, *};
 use std::f32::consts::PI;
 
 use crate::collections::SwapArray;
-use crate::game::{asteroid::AsteroidManager, score::ScoreManager, screen::{self, EdgeBehavior}};
+use crate::screen;
+use crate::game::{asteroid::AsteroidManager, score::ScoreManager, world::{self, EdgeBehavior}};
 
 const RADIUS: f32 = 0.05;
 const LENGTH: f32 = 0.35;
@@ -69,7 +70,7 @@ impl Bullet {
         score_manager: &mut ScoreManager)
     {
         self.position += Vec2::from_angle(self.angle) * SPEED * delta;
-        screen::handle_edge_behavior(self, self.position, RADIUS);
+        world::handle_edge_behavior(self, self.position, RADIUS);
         self.handle_collision(asteroid_manager, score_manager);
 
         self.time_left -= delta; 
@@ -111,7 +112,7 @@ impl Bullet {
 }
 
 impl EdgeBehavior for Bullet {
-    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
-        screen::screen_wrap(axis, &mut self.position, RADIUS);
+    fn on_hit_screen_edge(&mut self, axis: world::Axis) {
+        world::screen_wrap(axis, &mut self.position, RADIUS);
     }
 }

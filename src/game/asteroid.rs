@@ -2,7 +2,8 @@ use std::f32::consts::PI;
 
 use macroquad::{math::*, *};
 
-use crate::{game::{player::Player, score::ScoreManager, screen::{self, EdgeBehavior}}};
+use crate::screen;
+use crate::{game::{player::Player, score::ScoreManager, world::{self, EdgeBehavior}}};
 use crate::collections::SwapArray;
 
 const SPAWN_RADIUS: f32 = 1.0;
@@ -188,7 +189,7 @@ impl Asteroid {
 
     pub fn update(&mut self, delta: f32) {
         self.position += self.velocity * delta;
-        screen::handle_edge_behavior(self, self.position, self.radius);
+        world::handle_edge_behavior(self, self.position, self.radius);
     }
 
     pub fn draw(&self, player: &Player) {
@@ -222,8 +223,8 @@ impl Asteroid {
 }
 
 impl EdgeBehavior for Asteroid {
-    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
-        screen::screen_wrap(axis, &mut self.position, self.radius);
+    fn on_hit_screen_edge(&mut self, axis: world::Axis) {
+        world::screen_wrap(axis, &mut self.position, self.radius);
     }
 }
 
@@ -245,7 +246,8 @@ impl Particle {
 
     pub fn update(&mut self, delta: f32) {
         self.position += self.velocity * delta;
-        screen::handle_edge_behavior(self, self.position, PARTICLE_RADIUS * PARTICLE_SHAPE_RAND_FACTOR);
+        world::handle_edge_behavior(self, self.position,
+            PARTICLE_RADIUS * PARTICLE_SHAPE_RAND_FACTOR);
     }
 
     pub fn draw(&self) {
@@ -254,7 +256,7 @@ impl Particle {
 }
 
 impl EdgeBehavior for Particle {
-    fn on_hit_screen_edge(&mut self, _axis: screen::Axis) {
+    fn on_hit_screen_edge(&mut self, _axis: world::Axis) {
         self.position = Vec2::NAN;
     }
 }

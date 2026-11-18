@@ -3,7 +3,8 @@ use std::f32::consts::PI;
 use macroquad::{math::*, *};
 
 use crate::collections::CircleArray;
-use crate::game::{asteroid::AsteroidManager, bullet::BulletManager, screen::{self, EdgeBehavior}};
+use crate::screen;
+use crate::game::{asteroid::AsteroidManager, bullet::BulletManager, world::{self, EdgeBehavior}};
 
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
@@ -123,7 +124,7 @@ impl Player {
     fn update_transform(&mut self, delta: f32) {
         self.position += self.velocity * delta;
         self.angle += self.angular_velocity * delta;
-        screen::handle_edge_behavior(self, self.position, HEIGHT.max(WIDTH));
+        world::handle_edge_behavior(self, self.position, HEIGHT.max(WIDTH));
     }
 
     fn handle_shooting(&self, bullet_manager: &mut BulletManager) {
@@ -192,8 +193,8 @@ impl Player {
 }
 
 impl EdgeBehavior for Player {
-    fn on_hit_screen_edge(&mut self, axis: screen::Axis) {
-        screen::screen_wrap(axis, &mut self.position, HEIGHT.max(WIDTH));
+    fn on_hit_screen_edge(&mut self, axis: world::Axis) {
+        world::screen_wrap(axis, &mut self.position, HEIGHT.max(WIDTH));
     }
 }
 

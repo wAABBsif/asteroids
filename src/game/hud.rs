@@ -2,7 +2,8 @@ use std::f32::consts::PI;
 
 use macroquad::{math::*, *};
 
-use crate::game::{player::Player, score::ScoreManager, screen};
+use crate::screen;
+use crate::game::{player::Player, score::ScoreManager};
 
 const FONT_SIZE: f32 = 0.75;
 const FONT_COLOR: color::Color = color::WHITE;
