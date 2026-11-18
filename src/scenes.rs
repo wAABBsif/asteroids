@@ -30,7 +30,15 @@ async fn update(scenes: &mut Vec<Box<dyn Scene>>, delta: f32)
         return Ok(())
     }
     let scene = scene.unwrap();
-    scene.update(delta);
+    match scene.update(delta) {
+        Transition::None => {},
+        Transition::Remove => {
+            scenes.pop();
+        },
+        Transition::Add(s) => {
+            scenes.push(s);
+        }
+    };
     Ok(())
 }
 
@@ -49,7 +57,13 @@ fn terminate(mut _scenes: &mut Vec<Box<dyn Scene>>) -> Result<(), Box<dyn std::e
     Ok(())
 }
 
+pub enum Transition {
+    None,
+    Remove,
+    Add(Box<dyn Scene>),
+}
+
 pub trait Scene {
-    fn update(&mut self, delta: f32);
+    fn update(&mut self, delta: f32) -> Transition;
     fn draw(&self);
 }

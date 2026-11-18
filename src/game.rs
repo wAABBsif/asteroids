@@ -13,7 +13,7 @@ use asteroid::AsteroidManager;
 use score::ScoreManager;
 use hud::HUD;
 
-use crate::scenes::Scene;
+use crate::scenes::{Transition, Scene};
 
 pub struct GameState {
     pub player: Player,
@@ -36,11 +36,12 @@ impl GameState {
 }
 
 impl Scene for GameState {
-    fn update(&mut self, delta: f32) {
+    fn update(&mut self, delta: f32) -> Transition {
         self.player.update(delta, &mut self.bullet_manager, &mut self.asteroid_manager);
         self.bullet_manager.update(delta, &mut self.asteroid_manager, &mut self.score_manager);
         self.asteroid_manager.update(delta);
         self.score_manager.update(delta);
+        Transition::None
     }
 
     fn draw(&self) {
