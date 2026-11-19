@@ -1,7 +1,7 @@
 mod player;
 mod bullet;
 mod asteroid;
-mod screen;
+mod world;
 mod score;
 mod hud;
 
@@ -41,6 +41,9 @@ impl Scene for GameScene {
         self.bullet_manager.update(delta, &mut self.asteroid_manager, &mut self.score_manager);
         self.asteroid_manager.update(delta);
         self.score_manager.update(delta);
+        if macroquad::input::is_key_pressed(macroquad::input::KeyCode::Escape) {
+            return Transition::Add(Box::new(crate::pause::PauseScene::new()))
+        }
         Transition::None
     }
 
