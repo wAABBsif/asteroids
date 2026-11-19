@@ -1,7 +1,8 @@
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut scenes = initialize()?;
-    while !macroquad::input::is_quit_requested() {
-        update(&mut scenes, macroquad::time::get_frame_time()).await?;
+    let mut is_quit_requested = false;
+    while !macroquad::input::is_quit_requested() && !is_quit_requested {
+        is_quit_requested = update(&mut scenes, macroquad::time::get_frame_time()).await?;
         draw(&mut scenes).await?;
     }
     terminate(&mut scenes)?;
@@ -23,11 +24,11 @@ fn initialize() -> Result<Vec<Box<dyn Scene>>, Box<dyn std::error::Error>> {
 }
 
 async fn update(scenes: &mut Vec<Box<dyn Scene>>, delta: f32)
-    -> Result<(), Box<dyn std::error::Error>>
+    -> Result<bool, Box<dyn std::error::Error>>
 {
     let scene = scenes.last_mut();
     if scene.is_none() {
-        return Ok(())
+        return Ok(false)
     }
     let scene = scene.unwrap();
     match scene.update(delta) {
@@ -37,9 +38,15 @@ async fn update(scenes: &mut Vec<Box<dyn Scene>>, delta: f32)
         },
         Transition::Add(s) => {
             scenes.push(s);
+        },
+        Transition::Clear(s) => {
+            *scenes = vec![s];
+        },
+        Transition::Exit => {
+            return Ok(true)
         }
     };
-    Ok(())
+    Ok(false)
 }
 
 async fn draw(scenes: &mut Vec<Box<dyn Scene>>) -> Result<(), Box<dyn std::error::Error>> {
@@ -61,6 +68,8 @@ pub enum Transition {
     None,
     Remove,
     Add(Box<dyn Scene>),
+    Clear(Box<dyn Scene>),
+    Exit
 }
 
 pub trait Scene {

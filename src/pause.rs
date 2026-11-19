@@ -1,6 +1,6 @@
 use macroquad::{color, input::{self, KeyCode}, math::*, shapes, text};
 
-use crate::{scenes::{Scene, Transition}, screen::{self}};
+use crate::{game, scenes::{Scene, Transition}, screen::{self}};
 
 const BACKGROUND_COLOR: color::Color = color::Color {
     r: 0.0,
@@ -31,7 +31,9 @@ const BUTTON_GAP: f32 = 1.5;
 const BUTTON_SIZE: Vec2 = vec2(3.0, 1.0);
 const BUTTON_FONT_SIZE: f32 = 0.75;
 const BUTTONS: &[Button] = &[
-    Button {text: "RESUME", func: || Transition::Remove }
+    Button { text: "RESUME", func: || Transition::Remove },
+    Button { text: "RESTART", func: || Transition::Clear(Box::new(game::GameScene::new())) },
+    Button { text: "QUIT", func: || Transition::Exit }
 ];
 
 pub struct PauseScene {
