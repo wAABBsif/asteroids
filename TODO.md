@@ -21,8 +21,8 @@ This file contains the list of stuff there still is to do.
 - [x] Implement lives UI
 
 ## Meta
-- [ ] Add pausing
-- [ ] Allow game to be restarted
+- [x] Add pausing
+- [x] Allow game to be restarted
 - [ ] Add main menu
 - [ ] Add options
 - [ ] Add savedata
