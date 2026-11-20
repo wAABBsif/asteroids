@@ -12,10 +12,12 @@ use bullet::BulletManager;
 use asteroid::AsteroidManager;
 use score::ScoreManager;
 use hud::HUD;
+use world::Background;
 
-use crate::scenes::{Transition, Scene};
+use crate::{scenes::{Scene, Transition}};
 
 pub struct GameScene {
+    pub background: Background,
     pub player: Player,
     pub bullet_manager: BulletManager,
     pub asteroid_manager: AsteroidManager,
@@ -26,6 +28,7 @@ pub struct GameScene {
 impl GameScene {
     pub fn new() -> GameScene {
         GameScene {
+            background: Background::new(),
             player: Player::new(),
             bullet_manager: BulletManager::new(),
             asteroid_manager: AsteroidManager::new(),
@@ -48,6 +51,7 @@ impl Scene for GameScene {
     }
 
     fn draw(&self) {
+        self.background.draw();
         self.bullet_manager.draw();
         self.asteroid_manager.draw(&self.player);
         self.player.draw();

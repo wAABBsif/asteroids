@@ -1,4 +1,11 @@
-use macroquad::math::*;
+use macroquad::{math::*, *};
+
+use crate::screen;
+
+const STAR_COUNT: usize = 64;
+const STAR_RANGE: f32 = 1.2;
+const STAR_RADIUS: f32 = 0.04;
+const STAR_COLOR: color::Color = color::YELLOW;
 
 pub enum Axis {
     X,
@@ -26,5 +33,27 @@ pub fn handle_edge_behavior(obj: &mut impl EdgeBehavior, position: Vec2, size: f
 
     if position.y < -bounds.y || position.y > bounds.y {
         obj.on_hit_screen_edge(Axis::Y);
+    }
+}
+
+pub struct Background {
+    stars: [Vec2; STAR_COUNT]
+}
+
+impl Background {
+    pub fn new() -> Background {
+        Background {
+            stars: std::array::from_fn(|_i| vec2(
+                rand::gen_range(0.5 - STAR_RANGE * 0.5, 0.5 + STAR_RANGE * 0.5),
+                rand::gen_range(0.5 - STAR_RANGE * 0.5, 0.5 + STAR_RANGE * 0.5)
+            ))
+        }
+    }
+
+    pub fn draw(&self) {
+        for star in &self.stars {
+            let pos = screen::screen_size() * *star;
+            shapes::draw_circle(pos.x, pos.y, STAR_RADIUS * screen::pixels_per_unit(), STAR_COLOR);
+        }
     }
 }
