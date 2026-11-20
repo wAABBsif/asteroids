@@ -3,9 +3,14 @@ use macroquad::{math::*, *};
 use crate::screen;
 
 const STAR_COUNT: usize = 64;
-const STAR_RANGE: f32 = 1.2;
-const STAR_RADIUS: f32 = 0.04;
-const STAR_COLOR: color::Color = color::YELLOW;
+const STAR_RANGE: f32 = 1.25;
+const STAR_RADIUS: f32 = 0.02;
+const STAR_COLOR: color::Color = color::Color {
+    r: 0.9,
+    g: 0.9,
+    b: 0.3,
+    a: 1.0
+};
 
 pub enum Axis {
     X,
