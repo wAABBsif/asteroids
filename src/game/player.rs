@@ -8,7 +8,8 @@ use crate::game::{asteroid::AsteroidManager, bullet::BulletManager, world::{self
 
 const WIDTH: f32 = 0.2;
 const HEIGHT: f32 = 0.3;
-const COLOR: color::Color = color::WHITE;
+pub const COLOR: color::Color = color::WHITE;
+const DEAD_COLOR: color::Color = color::LIGHTGRAY;
 
 const TRAIL_LENGTH: usize = 64;
 const TRAIL_INTERVAL: f32 = 0.01;
@@ -23,6 +24,8 @@ const DRAG: f32 = 0.8;
 
 const INITIAL_LIVES: u16 = 3;
 const RESPAWN_TIME: f32 = 2.0;
+const DEATH_GRAVITY: f32 = 16.0;
+const DEATH_ANGULAR_VELOCITY: f32 = 8.0;
 const INVINCIBILITY_TIME: f32 = 1.0;
 const INVINCIBILITY_DISAPPEAR_TIME: f32 = 0.2;
 
@@ -97,7 +100,9 @@ impl Player {
             self.respawn();
             return;
         }
-        self.position = Vec2::ZERO;
+        self.angular_velocity = DEATH_ANGULAR_VELOCITY;
+        self.velocity.y += DEATH_GRAVITY * delta;
+        self.update_transform(delta);
         self.is_accelerating = false;
     }
 
@@ -124,7 +129,9 @@ impl Player {
     fn update_transform(&mut self, delta: f32) {
         self.position += self.velocity * delta;
         self.angle += self.angular_velocity * delta;
-        world::handle_edge_behavior(self, self.position, HEIGHT.max(WIDTH));
+        if self.is_active {
+            world::handle_edge_behavior(self, self.position, HEIGHT.max(WIDTH));
+        }
     }
 
     fn handle_shooting(&self, bullet_manager: &mut BulletManager) {
@@ -146,20 +153,20 @@ impl Player {
     pub fn draw(&self) {
         self.trail.draw();
 
-        if !self.is_active {
-            return;
-        }
-
-        if self.timer >= 0.0 {
+        if self.timer >= 0.0 && self.is_active {
             if self.timer % INVINCIBILITY_DISAPPEAR_TIME * 2.0 < INVINCIBILITY_DISAPPEAR_TIME {
                 return;
             }
         }
-
-        Player::draw_player(self.position, self.angle, 1.0, true);
+        let color = if self.is_active {
+            COLOR
+        } else {
+            DEAD_COLOR
+        };
+        Player::draw_player(self.position, self.angle, 1.0, true, color);
     }
 
-    pub fn draw_player(position: Vec2, angle: f32, scale: f32, offset: bool) {
+    pub fn draw_player(position: Vec2, angle: f32, scale: f32, offset: bool, color: color::Color) {
         let right = vec2(0.0, -1.0).rotate(Vec2::from_angle(angle));
         let up = vec2(1.0, 0.0).rotate(Vec2::from_angle(angle));
         let height = HEIGHT * scale;
@@ -175,14 +182,14 @@ impl Player {
                 screen::world_to_screen_offset(points[0]),
                 screen::world_to_screen_offset(points[1]),
                 screen::world_to_screen_offset(points[2]),
-                COLOR
+                color
             );
         } else {
             shapes::draw_triangle(
                 screen::world_to_screen(points[0]),
                 screen::world_to_screen(points[1]),
                 screen::world_to_screen(points[2]),
-                COLOR
+                color
             );
         }
     }

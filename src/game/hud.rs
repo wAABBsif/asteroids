@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use macroquad::{math::*, *};
 
 use crate::screen;
-use crate::game::{player::Player, score::ScoreManager};
+use crate::game::{player::{self, Player}, score::ScoreManager};
 
 const FONT_SIZE: f32 = 0.75;
 const FONT_COLOR: color::Color = color::WHITE;
@@ -47,7 +47,7 @@ impl HUD {
         for i in 0..player.lives {
             let btm = screen::world_size().y;
             let position = vec2(LIVES_POSITION.x + i as f32 * LIVES_GAP, btm - LIVES_POSITION.y);
-            Player::draw_player(position, PI / -2.0, LIVES_SCALE, false);
+            Player::draw_player(position, PI / -2.0, LIVES_SCALE, false, player::COLOR);
         }
     }
 }
