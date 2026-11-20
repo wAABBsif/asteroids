@@ -32,7 +32,7 @@ This file contains the list of stuff there still is to do.
 - [x] Add lighting to asteroids based upon player position
 - [x] Add effect to asteroids being split/destroyed
 - [x] Add effect to player being destroyed
-- [ ] Add player spawn effect
+- [x] Add player spawn effect
 - [ ] Add background
 - [ ] Implement sound
 - [ ] Add ship noises

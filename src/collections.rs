@@ -104,6 +104,13 @@ pub struct CircleArray<T, const N: usize> {
 impl<T, const N: usize> CircleArray<T, N>
     where T: Copy + Clone
 {
+    pub fn new(array: impl Into<[T; N]>) -> CircleArray<T, N> {
+        CircleArray {
+            items: Box::new(array.into()),
+            head: 0
+        }
+    }
+
     pub fn add(&mut self, item: impl Into<T>) {
         self.items[self.head] = item.into();
         self.head = (self.head + 1) % N;

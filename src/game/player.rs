@@ -28,6 +28,7 @@ const DEATH_GRAVITY: f32 = 16.0;
 const DEATH_ANGULAR_VELOCITY: f32 = 8.0;
 const INVINCIBILITY_TIME: f32 = 1.0;
 const INVINCIBILITY_DISAPPEAR_TIME: f32 = 0.2;
+const INVINCIBILITY_SCALE_TIME_SCALE: f32 = 2.5;
 
 pub struct Player {
     pub is_active: bool,
@@ -36,6 +37,8 @@ pub struct Player {
     pub velocity: Vec2,
     pub angle: f32,
     pub angular_velocity: f32,
+    scale: f32,
+    is_visible: bool,
     is_accelerating: bool,
     timer: f32,
     trail: Trail
@@ -50,10 +53,12 @@ impl Player {
             velocity: Vec2::ZERO,
             angle:  -PI / 2.0,
             angular_velocity: 0.0,
+            scale: 0.0,
+            is_visible: true,
             is_accelerating: false,
             timer: 0.0,
             trail: Trail {
-                pts: CircleArray::default(),
+                pts: CircleArray::new([Vec2::NAN; TRAIL_LENGTH]),
                 timer: 0.0,
             },
         }
@@ -79,19 +84,19 @@ impl Player {
         } else {
             self.handle_inactive(delta);
         }
-        self.trail.update(delta, self.position, self.up_direction(), self.velocity,
-            self.is_accelerating);
+        self.trail.update(delta, self.position - self.up_direction() * HEIGHT * self.scale,
+            self.velocity, self.is_accelerating);
     }
 
     fn handle_active(&mut self, delta: f32, bullet_manager: &mut BulletManager,
         asteroid_manager: &mut AsteroidManager)
     {
-        self.timer -= delta;
         self.handle_rotation();
         self.handle_movement(delta);
         self.update_transform(delta);
         self.handle_shooting(bullet_manager);
         self.handle_collision(asteroid_manager);
+        self.handle_respawning(delta);
     }
 
     fn handle_inactive(&mut self, delta: f32) {
@@ -150,20 +155,32 @@ impl Player {
         }
     }
 
+    fn handle_respawning(&mut self, delta: f32) {
+        self.timer -= delta;
+        if self.timer >= 0.0 && self.is_active {
+            self.is_visible =
+                self.timer % INVINCIBILITY_DISAPPEAR_TIME * 2.0 < INVINCIBILITY_DISAPPEAR_TIME;
+            self.scale = clamp(INVINCIBILITY_SCALE_TIME_SCALE * 
+                (1.0 - self.timer / INVINCIBILITY_TIME), 0.0, 1.0);
+        } else {
+            self.scale = 1.0;
+            self.is_visible = true;
+        }
+    }
+
     pub fn draw(&self) {
         self.trail.draw();
-
+        if !self.is_visible {
+            return;
+        }
         if self.timer >= 0.0 && self.is_active {
-            if self.timer % INVINCIBILITY_DISAPPEAR_TIME * 2.0 < INVINCIBILITY_DISAPPEAR_TIME {
-                return;
-            }
         }
         let color = if self.is_active {
             COLOR
         } else {
             DEAD_COLOR
         };
-        Player::draw_player(self.position, self.angle, 1.0, true, color);
+        Player::draw_player(self.position, self.angle, self.scale, true, color);
     }
 
     pub fn draw_player(position: Vec2, angle: f32, scale: f32, offset: bool, color: color::Color) {
@@ -211,13 +228,13 @@ struct Trail {
 }
 
 impl Trail {
-    fn update(&mut self, delta: f32, position: Vec2, up_dir: Vec2, velocity: Vec2,
+    fn update(&mut self, delta: f32, position: Vec2, velocity: Vec2,
         is_accelerating: bool)
     {
         self.timer -= delta;
         while self.timer <= 0.0 {
             self.pts.add(if is_accelerating {
-                position - up_dir * HEIGHT + velocity * self.timer
+                position + velocity * self.timer
             } else {
                 Vec2::NAN
             });
