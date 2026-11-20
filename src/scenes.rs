@@ -17,7 +17,13 @@ fn initialize() -> Result<Vec<Box<dyn Scene>>, Box<dyn std::error::Error>> {
     println!("Disabling macroquad auto-termination");
     macroquad::input::prevent_quit();
 
-    println!("Initializing game state");
+    println!("Seeding RNG");
+    let now = std::time::SystemTime::now();
+    let time = now.duration_since(std::time::UNIX_EPOCH)?;
+    let time = time.as_secs();
+    macroquad::rand::srand(time);
+
+    println!("Initializing game scene");
     let scenes: Vec<Box<dyn Scene>> = vec![Box::new(crate::game::GameScene::new())];
 
     Ok(scenes)
