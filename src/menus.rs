@@ -5,6 +5,7 @@ pub struct Menu<const N: usize> {
     pub unselected_color: color::Color,
     pub selected_color: color::Color,
     pub text_color: color::Color,
+    pub position_offset: Vec2,
     pub button_gap: f32,
     pub button_size: Vec2,
     pub font_size: f32,
@@ -32,7 +33,7 @@ impl<const N: usize> Menu<N> {
         let start_height = self.button_size.y * 0.25 - self.buttons.len() as f32 * self.button_gap * 0.5;
         for i in 0..self.buttons.len() {
             let position = vec2(self.button_size.x * -0.5, start_height + self.button_gap * (i as f32));
-            let position = screen::world_to_screen_offset(position);
+            let position = screen::world_to_screen_offset(position + self.position_offset);
             let size = screen::world_to_screen(self.button_size);
             let color = if selected_index == i {
                 self.selected_color

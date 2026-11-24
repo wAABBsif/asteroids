@@ -28,6 +28,7 @@ const MENU: Menu<3> = Menu {
         b: 0.0,
         a: 1.0
     },
+    position_offset: vec2(0.0, 0.0),
     button_gap: 1.5,
     button_size: vec2(3.0, 1.0),
     font_size: 0.75,
