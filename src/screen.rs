@@ -1,6 +1,7 @@
 use macroquad::{color, math::*};
 
-const WORLD_WIDTH: f32 = 16.0;
+const MIN_WORLD_WIDTH: f32 = 16.0;
+const MIN_WORLD_HEIGHT: f32 = 9.0;
 
 const STAR_COUNT: usize = 64;
 const STAR_RANGE: f32 = 1.25;
@@ -13,14 +14,16 @@ const STAR_COLOR: color::Color = color::Color {
 };
 
 pub fn screen_size() -> Vec2 {
-    if cfg!(test) {
-        return vec2(16.0, 9.0);
-    }
     vec2(macroquad::window::screen_width(), macroquad::window::screen_height())
 }
 
 pub fn world_size() -> Vec2 {
-    vec2(WORLD_WIDTH, WORLD_WIDTH / aspect_ratio())
+    let aspect = aspect_ratio();
+    if MIN_WORLD_WIDTH / aspect <= MIN_WORLD_HEIGHT {
+        vec2(MIN_WORLD_HEIGHT * aspect, MIN_WORLD_HEIGHT)
+    } else {
+        vec2(MIN_WORLD_WIDTH, MIN_WORLD_WIDTH / aspect)
+    }
 }
 
 pub fn aspect_ratio() -> f32 {
