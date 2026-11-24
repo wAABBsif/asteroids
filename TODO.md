@@ -25,6 +25,8 @@ This file contains the list of stuff there still is to do.
 - [x] Allow game to be restarted
 - [x] Add main menu
 - [ ] Add options
+- [ ] Add menu after death
+- [ ] Store highscore
 - [ ] Add savedata
 
 ## Audio/Visual

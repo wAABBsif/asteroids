@@ -6,11 +6,11 @@ use crate::screen;
 use crate::game::{asteroid::AsteroidManager, score::ScoreManager, world::{self, EdgeBehavior}};
 
 const RADIUS: f32 = 0.05;
-const LENGTH: f32 = 0.35;
+const LENGTH: f32 = 0.5;
 const FADE_START_TIME: f32 = 1.6;
 const COLOR: color::Color = color::BLUE;
 
-const SPEED: f32 = 8.0;
+const SPEED: f32 = 12.0;
 const LIFETIME: f32 = 2.0;
 
 const MAX_COUNT: usize = 32;
@@ -70,7 +70,7 @@ impl Bullet {
         score_manager: &mut ScoreManager)
     {
         self.position += Vec2::from_angle(self.angle) * SPEED * delta;
-        world::handle_edge_behavior(self, self.position, RADIUS);
+        world::handle_edge_behavior(self, self.position, LENGTH);
         self.handle_collision(asteroid_manager, score_manager);
 
         self.time_left -= delta; 
