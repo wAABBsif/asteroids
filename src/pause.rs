@@ -2,32 +2,11 @@ use macroquad::{color, input::{self, KeyCode}, math::*, shapes};
 
 use crate::{menus::*, main_menu, game, scenes::{Scene, Transition}};
 
-const BACKGROUND_COLOR: color::Color = color::Color {
-    r: 0.0,
-    g: 0.0,
-    b: 0.0,
-    a: 0.7
-};
-
+const BACKGROUND_COLOR: color::Color = color::BLACK.with_alpha(0.7);
 const MENU: Menu<3> = Menu {
-    unselected_color: color::Color {
-        r: 1.0,
-        g: 1.0,
-        b: 1.0,
-        a: 1.0
-    },
-    selected_color: color::Color {
-        r: 1.0,
-        g: 1.0,
-        b: 0.0,
-        a: 1.0
-    },
-    text_color: color::Color {
-        r: 0.0,
-        g: 0.0,
-        b: 0.0,
-        a: 1.0
-    },
+    unselected_color: color::WHITE,
+    selected_color: color::YELLOW,
+    text_color: color::BLACK,
     position_offset: vec2(0.0, 0.0),
     button_gap: 1.5,
     button_size: vec2(4.0, 1.0),

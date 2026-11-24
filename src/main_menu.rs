@@ -8,24 +8,9 @@ const TITLE_HEIGHT: f32 = -1.5;
 const TITLE_COLOR: color::Color = macroquad::color::WHITE;
 
 const MENU: Menu<2> = Menu {
-    unselected_color: color::Color {
-        r: 1.0,
-        g: 1.0,
-        b: 1.0,
-        a: 1.0
-    },
-    selected_color: color::Color {
-        r: 1.0,
-        g: 1.0,
-        b: 0.0,
-        a: 1.0
-    },
-    text_color: color::Color {
-        r: 0.0,
-        g: 0.0,
-        b: 0.0,
-        a: 1.0
-    },
+    unselected_color: color::WHITE,
+    selected_color: color::YELLOW,
+    text_color: color::BLACK,
     position_offset: vec2(0.0, 1.5),
     button_gap: 1.5,
     button_size: vec2(4.0, 1.0),
