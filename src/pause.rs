@@ -1,6 +1,6 @@
 use macroquad::{color, input::{self, KeyCode}, math::*, shapes};
 
-use crate::{menus::*, game, scenes::{Scene, Transition}};
+use crate::{menus::*, main_menu, game, scenes::{Scene, Transition}};
 
 const BACKGROUND_COLOR: color::Color = color::Color {
     r: 0.0,
@@ -30,12 +30,12 @@ const MENU: Menu<3> = Menu {
     },
     position_offset: vec2(0.0, 0.0),
     button_gap: 1.5,
-    button_size: vec2(3.0, 1.0),
+    button_size: vec2(4.0, 1.0),
     font_size: 0.75,
     buttons: [
         Button { text: "RESUME", func: || Transition::Remove },
         Button { text: "RESTART", func: || Transition::Clear(Box::new(game::GameScene::new())) },
-        Button { text: "QUIT", func: || Transition::Exit }
+        Button { text: "MAIN MENU", func: || Transition::Clear(Box::new(main_menu::MainMenuScene::new())) }
     ]
 };
 

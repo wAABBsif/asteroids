@@ -12,9 +12,8 @@ use bullet::BulletManager;
 use asteroid::AsteroidManager;
 use score::ScoreManager;
 use hud::HUD;
-use world::Background;
 
-use crate::{scenes::{Scene, Transition}};
+use crate::{screen::Background, scenes::{Scene, Transition}};
 
 pub struct GameScene {
     pub background: Background,

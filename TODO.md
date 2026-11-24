@@ -23,7 +23,7 @@ This file contains the list of stuff there still is to do.
 ## Meta
 - [x] Add pausing
 - [x] Allow game to be restarted
-- [ ] Add main menu
+- [x] Add main menu
 - [ ] Add options
 - [ ] Add savedata
 
@@ -39,3 +39,7 @@ This file contains the list of stuff there still is to do.
 - [ ] Add bullet noises
 - [ ] Add asteroid noises
 - [ ] Add miscellaneous/meta sound effects
+
+## Extra
+- [ ] Add scene transitions
+- [ ] Add camera shake

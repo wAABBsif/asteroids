@@ -24,7 +24,7 @@ fn initialize() -> Result<Vec<Box<dyn Scene>>, Box<dyn std::error::Error>> {
     macroquad::rand::srand(time);
 
     println!("Initializing game scene");
-    let scenes: Vec<Box<dyn Scene>> = vec![Box::new(crate::game::GameScene::new())];
+    let scenes: Vec<Box<dyn Scene>> = vec![Box::new(crate::main_menu::MainMenuScene::new())];
 
     Ok(scenes)
 }
